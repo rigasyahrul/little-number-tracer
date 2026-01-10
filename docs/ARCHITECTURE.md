@@ -58,7 +58,7 @@ Zustand store for tracking completed numbers and scores
 
 ## Deployment
 
-Static hosting (Vercel, Netlify, or GitHub Pages) as PWA with offline support
+Static files deployed to **Object Storage** with **CDN** distribution for global availability and fast loading. PWA with offline support via Service Workers.
 
 ## Architecture Decision Records
 
