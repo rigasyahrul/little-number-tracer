@@ -56,11 +56,6 @@ Zustand store for tracking completed numbers and scores
 
 **Dependencies:** Zustand, IndexedDB
 
-### 9. ParentDashboard
-Simple view showing child progress stats
-
-**Dependencies:** ProgressStore
-
 ## Deployment
 
 Static hosting (Vercel, Netlify, or GitHub Pages) as PWA with offline support
