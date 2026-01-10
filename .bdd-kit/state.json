@@ -1,0 +1,18 @@
+{
+  "phase": "architecture",
+  "discovery": "discovery.json",
+  "architecture": "docs/ARCHITECTURE.md",
+  "requirements": "docs/REQ.md",
+  "specs": [
+    "number-tracing.feature",
+    "stroke-direction.feature",
+    "tracing-detection.feature",
+    "mascot.feature",
+    "celebrations.feature",
+    "number-gallery.feature",
+    "practice-mode.feature",
+    "free-draw.feature",
+    "progress-tracking.feature",
+    "color-scheme.feature"
+  ]
+}
