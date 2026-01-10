@@ -59,3 +59,6 @@ workbox-*.js
 # Misc
 *.local
 .turbo/
+
+# Ignore bdd-kit
+bdd-kit
