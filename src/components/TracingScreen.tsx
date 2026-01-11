@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TracingCanvas } from './TracingCanvas/TracingCanvas'
 import { NumberPath } from './NumberPath/NumberPath'
+import { StrokeArrows } from './StrokeArrows/StrokeArrows'
 import { getNumberDefinition } from '../data/numberDefinitions'
+import { useTracing } from '../hooks/useTracing'
+import { useProgressStore } from '../stores/progressStore'
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 500
@@ -14,10 +17,35 @@ interface TracingScreenProps {
 export function TracingScreen({ number, onComplete }: TracingScreenProps) {
   const [clearTrigger, setClearTrigger] = useState(0)
   const numberDef = getNumberDefinition(number)
+  const { incrementAttempt, setCompleted } = useProgressStore()
+
+  const {
+    state,
+    getCurrentStroke,
+    handleStrokeChange,
+    handleStrokeEnd,
+    reset,
+  } = useTracing({
+    numberDef,
+    onComplete: async (accuracy) => {
+      await setCompleted(number, accuracy)
+      // Show celebration would happen here
+      setTimeout(() => {
+        onComplete()
+      }, 1500)
+    },
+  })
 
   const handleReset = () => {
     setClearTrigger((prev) => prev + 1)
+    reset()
   }
+
+  useEffect(() => {
+    incrementAttempt(number)
+  }, [])
+
+  const currentStroke = getCurrentStroke()
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4">
@@ -34,13 +62,41 @@ export function TracingScreen({ number, onComplete }: TracingScreenProps) {
           numberDef={numberDef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
+          highlightStrokeId={currentStroke?.id}
+        />
+        <StrokeArrows
+          stroke={currentStroke}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          isCurrentStroke={true}
         />
         <TracingCanvas
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
           clearTrigger={clearTrigger}
+          onStrokeChange={(points) => {
+            const normalized = points.map((p) => ({
+              x: p.x / CANVAS_WIDTH,
+              y: p.y / CANVAS_HEIGHT,
+            }))
+            handleStrokeChange(normalized)
+          }}
+          onStrokeEnd={(points) => {
+            const normalized = points.map((p) => ({
+              x: p.x / CANVAS_WIDTH,
+              y: p.y / CANVAS_HEIGHT,
+            }))
+            handleStrokeEnd(normalized)
+          }}
         />
       </div>
+
+      {/* Status info */}
+      {currentStroke && (
+        <div className="text-lg font-semibold text-text-dark">
+          Stroke {state.currentStrokeIndex + 1} of {numberDef.strokes.length}
+        </div>
+      )}
 
       {/* Controls */}
       <div className="flex gap-4">

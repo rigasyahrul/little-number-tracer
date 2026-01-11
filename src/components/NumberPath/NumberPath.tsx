@@ -5,12 +5,16 @@ interface NumberPathProps {
   numberDef: NumberDefinition
   width?: number
   height?: number
+  highlightStrokeId?: string
+  onPathStrokeId?: string
 }
 
 export function NumberPath({
   numberDef,
   width = 800,
   height = 600,
+  highlightStrokeId,
+  onPathStrokeId,
 }: NumberPathProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -32,11 +36,28 @@ export function NumberPath({
 
     // Draw dotted paths for each stroke
     numberDef.strokes.forEach((stroke) => {
-      context.strokeStyle = '#999999'
-      context.setLineDash([5, 5])
-      context.lineWidth = 3
+      const isHighlighted = stroke.id === highlightStrokeId
+      const isOnPath = stroke.id === onPathStrokeId
+
+      if (isOnPath) {
+        context.strokeStyle = '#52B788' // tracing.active
+      } else if (isHighlighted) {
+        context.strokeStyle = '#FFB84D' // primary.orange
+      } else {
+        context.strokeStyle = '#999999' // tracing.dotted
+      }
+
+      context.setLineDash(isHighlighted ? [] : [5, 5])
+      context.lineWidth = isHighlighted ? 4 : 3
       context.lineCap = 'round'
       context.lineJoin = 'round'
+
+      if (isOnPath) {
+        context.shadowColor = 'rgba(82, 183, 136, 0.5)'
+        context.shadowBlur = 8
+      } else {
+        context.shadowColor = 'transparent'
+      }
 
       context.beginPath()
       const firstPoint = stroke.points[0]
@@ -46,6 +67,7 @@ export function NumberPath({
         context.lineTo(point.x * width, point.y * height)
       })
       context.stroke()
+      context.shadowColor = 'transparent'
     })
 
     // Draw start point marker
@@ -65,7 +87,7 @@ export function NumberPath({
     context.textAlign = 'center'
     context.textBaseline = 'middle'
     context.fillText('START', startPoint.x * width, startPoint.y * height)
-  }, [numberDef, width, height])
+  }, [numberDef, width, height, highlightStrokeId, onPathStrokeId])
 
   return (
     <canvas
