@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { TracingCanvas } from './TracingCanvas/TracingCanvas'
 import { NumberPath } from './NumberPath/NumberPath'
 import { StrokeArrows } from './StrokeArrows/StrokeArrows'
+import { Mascot } from './Mascot/Mascot'
+import { CelebrationOverlay } from './CelebrationOverlay/CelebrationOverlay'
 import { getNumberDefinition } from '../data/numberDefinitions'
 import { useTracing } from '../hooks/useTracing'
 import { useProgressStore } from '../stores/progressStore'
@@ -16,6 +18,8 @@ interface TracingScreenProps {
 
 export function TracingScreen({ number, onComplete }: TracingScreenProps) {
   const [clearTrigger, setClearTrigger] = useState(0)
+  const [mascotState, setMascotState] = useState<'idle' | 'guiding' | 'happy' | 'celebrate'>('idle')
+  const [showCelebration, setShowCelebration] = useState(false)
   const numberDef = getNumberDefinition(number)
   const { incrementAttempt, setCompleted } = useProgressStore()
 
@@ -28,6 +32,8 @@ export function TracingScreen({ number, onComplete }: TracingScreenProps) {
   } = useTracing({
     numberDef,
     onComplete: async (accuracy) => {
+      setMascotState('celebrate')
+      setShowCelebration(true)
       await setCompleted(number, accuracy)
       // Show celebration would happen here
       setTimeout(() => {
@@ -48,10 +54,15 @@ export function TracingScreen({ number, onComplete }: TracingScreenProps) {
   const currentStroke = getCurrentStroke()
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 relative">
+      <CelebrationOverlay show={showCelebration} />
+
       <h2 className="text-4xl font-bold text-text-dark">
         Trace the Number {number}
       </h2>
+
+      {/* Mascot */}
+      <Mascot state={mascotState} />
 
       {/* Canvas container */}
       <div
