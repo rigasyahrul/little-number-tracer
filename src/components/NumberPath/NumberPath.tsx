@@ -86,19 +86,19 @@ export function NumberPath({
         const isHighlighted = strokePath.id === highlightStrokeId
         const isOnPath = strokePath.id === onPathStrokeId
 
-        let strokeColor = '#666666'
-        let strokeWidth = 3
-        let dashArray = '8,8'
+        let strokeColor = '#FF9500'
+        let strokeWidth = 4
+        let dashArray = '10,6'
         let filter = ''
 
         if (isOnPath) {
-          strokeColor = '#52B788'
-          strokeWidth = 4
+          strokeColor = '#34C759'
+          strokeWidth = 5
           dashArray = ''
           filter = 'url(#glowFilter)'
         } else if (isHighlighted) {
-          strokeColor = '#FFB84D'
-          strokeWidth = 4
+          strokeColor = '#FF9500'
+          strokeWidth = 5
           dashArray = ''
         }
 
