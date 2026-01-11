@@ -129,10 +129,12 @@ export function TracingCanvas({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       style={{
+        position: 'relative',
+        zIndex: 10,
         border: '2px solid #999',
         borderRadius: '8px',
         cursor: 'crosshair',
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
         touchAction: 'none',
       }}
     />

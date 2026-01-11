@@ -68,6 +68,7 @@ export function NumberPath({
         top: 0,
         left: 0,
         pointerEvents: 'none',
+        zIndex: 1,
       }}
     >
       {/* Thick gray background number */}
