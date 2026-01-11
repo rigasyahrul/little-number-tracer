@@ -28,11 +28,17 @@ export function App() {
     setView('freeDraw')
   }
 
+  const getTitle = () => {
+    if (view === 'freeDraw') return 'Little Number Tracer - Free Draw'
+    if (view === 'tracing') return `Little Number Tracer - Number ${selectedNumber}`
+    return 'Little Number Tracer'
+  }
+
   return (
     <div className="w-full h-full flex flex-col bg-background-cream">
       {/* Header */}
       <header className="bg-primary-yellow shadow-md p-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-text-dark">Little Number Tracer</h1>
+        <h1 className="text-2xl font-bold text-text-dark">{getTitle()}</h1>
         {view !== 'gallery' && (
           <button
             onClick={handleBackToGallery}
