@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { Stroke } from '../../types/tracing'
 
 interface StrokeArrowsProps {
-  stroke: Stroke
+  stroke: Stroke | undefined
   width?: number
   height?: number
   isCurrentStroke?: boolean
@@ -20,7 +20,7 @@ export function StrokeArrows({
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !isCurrentStroke) return
+    if (!canvas || !isCurrentStroke || !stroke || !stroke.points || stroke.points.length < 2) return
 
     const dpr = window.devicePixelRatio || 1
     canvas.width = width * dpr
