@@ -10,17 +10,20 @@ interface NumberPathProps {
 }
 
 function scaleSvgPath(path: string, width: number, height: number): string {
-  const tokens = path.match(/[MLCQASZHV]|[+-]?\d*\.?\d+/gi) || []
+  const normalizedPath = path.replace(/,/g, ' ')
+  const tokens = normalizedPath.match(/[MLCQASZHVZ]|[+-]?\d*\.?\d+/gi) || []
   const result: string[] = []
   let isXCoord = true
   
   for (const token of tokens) {
-    if (/^[MLCQASZHV]$/i.test(token)) {
+    if (/^[MLCQASZHVZ]$/i.test(token)) {
       result.push(token)
       if (token.toUpperCase() === 'H') {
         isXCoord = true
       } else if (token.toUpperCase() === 'V') {
         isXCoord = false
+      } else if (token.toUpperCase() === 'Z') {
+        // Z doesn't change coordinate state
       } else {
         isXCoord = true
       }
