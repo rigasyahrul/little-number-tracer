@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 bdd-kit
+
+.beads/beads.db
+.beads/daemon.lock
+
