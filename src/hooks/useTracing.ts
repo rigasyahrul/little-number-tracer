@@ -1,13 +1,13 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { NumberDefinition, StrokePoint } from '../types/tracing'
-import { isStrokeComplete } from '../utils/pathDetection'
+
+const PATH_TOLERANCE = 0.05
+const COMPLETION_THRESHOLD = 0.99
 
 interface TracingState {
-  currentStrokeIndex: number
   isComplete: boolean
   accuracy: number
-  currentStrokeOnPath: number
-  currentStrokeTotal: number
+  pathCoverage: number
 }
 
 interface UseTracingOptions {
@@ -17,92 +17,75 @@ interface UseTracingOptions {
 
 export function useTracing({ numberDef, onComplete }: UseTracingOptions) {
   const [state, setState] = useState<TracingState>({
-    currentStrokeIndex: 0,
     isComplete: false,
     accuracy: 0,
-    currentStrokeOnPath: 0,
-    currentStrokeTotal: 0,
+    pathCoverage: 0,
   })
 
+  const coveredPointsRef = useRef<Set<number>>(new Set())
+
   const getCurrentStroke = useCallback(() => {
-    return numberDef.strokes[state.currentStrokeIndex]
-  }, [numberDef, state.currentStrokeIndex])
+    return numberDef.strokes[0]
+  }, [numberDef])
 
   const handleStrokeChange = useCallback(
     (userPoints: Array<StrokePoint>) => {
       if (state.isComplete) return
 
-      const currentStroke = getCurrentStroke()
-      if (!currentStroke) return
+      const stroke = numberDef.strokes[0]
+      if (!stroke) return
 
-      // Count on-path points
-      let onPathCount = 0
       userPoints.forEach((userPoint) => {
-        const minDist = Math.min(
-          ...currentStroke.points.map((pathPoint) => {
-            const dx = userPoint.x - pathPoint.x
-            const dy = userPoint.y - pathPoint.y
-            return Math.sqrt(dx * dx + dy * dy)
-          })
-        )
-        if (minDist <= 0.15) {
-          onPathCount++
+        for (let i = 0; i < stroke.points.length; i++) {
+          const pathPoint = stroke.points[i]
+          const dx = userPoint.x - pathPoint.x
+          const dy = userPoint.y - pathPoint.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          if (distance <= PATH_TOLERANCE) {
+            coveredPointsRef.current.add(i)
+          }
         }
       })
 
+      const coverage = coveredPointsRef.current.size / stroke.points.length
+
       setState((prev) => ({
         ...prev,
-        currentStrokeOnPath: onPathCount,
-        currentStrokeTotal: userPoints.length,
+        pathCoverage: coverage,
       }))
     },
-    [state.isComplete, getCurrentStroke]
+    [state.isComplete, numberDef]
   )
 
   const handleStrokeEnd = useCallback(
-    (userPoints: Array<StrokePoint>) => {
+    (_userPoints: Array<StrokePoint>) => {
       if (state.isComplete) return
 
-      const currentStroke = getCurrentStroke()
-      if (!currentStroke) return
+      const stroke = numberDef.strokes[0]
+      if (!stroke) return
 
-      const isComplete = isStrokeComplete(userPoints, currentStroke, 0.7, 0.5)
+      const coverage = coveredPointsRef.current.size / stroke.points.length
 
-      if (isComplete) {
-        const nextStrokeIndex = state.currentStrokeIndex + 1
-
-        if (nextStrokeIndex >= numberDef.strokes.length) {
-          // All strokes complete!
-          const finalAccuracy =
-            (state.currentStrokeOnPath + 1) /
-            (state.currentStrokeTotal + 1)
-          setState((prev) => ({
-            ...prev,
-            isComplete: true,
-            accuracy: finalAccuracy,
-          }))
-          onComplete?.(finalAccuracy)
-        } else {
-          // Move to next stroke
-          setState((prev) => ({
-            ...prev,
-            currentStrokeIndex: nextStrokeIndex,
-            currentStrokeOnPath: 0,
-            currentStrokeTotal: 0,
-          }))
-        }
+      if (coverage >= COMPLETION_THRESHOLD) {
+        setState((prev) => ({
+          ...prev,
+          isComplete: true,
+          accuracy: coverage,
+          pathCoverage: coverage,
+        }))
+        onComplete?.(coverage)
       }
     },
-    [state, numberDef, getCurrentStroke, onComplete]
+    [state.isComplete, numberDef, onComplete]
   )
 
   const reset = useCallback(() => {
+    coveredPointsRef.current = new Set()
     setState({
-      currentStrokeIndex: 0,
       isComplete: false,
       accuracy: 0,
-      currentStrokeOnPath: 0,
-      currentStrokeTotal: 0,
+      pathCoverage: 0,
     })
   }, [])
 

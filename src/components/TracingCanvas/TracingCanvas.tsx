@@ -43,7 +43,7 @@ export function TracingCanvas({
     context.scale(dpr, dpr)
     context.lineCap = 'round'
     context.lineJoin = 'round'
-    context.lineWidth = 5
+    context.lineWidth = 15
     context.strokeStyle = '#52B788'
 
     contextRef.current = context

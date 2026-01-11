@@ -92,7 +92,7 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
     strokes: [
       {
         id: '3-1',
-        svgPath: 'M 20,20 C 30,10 70,10 75,25 C 80,40 55,50 45,50',
+        svgPath: 'M 20,20 C 30,10 70,10 75,25 C 80,40 55,50 45,50 C 55,50 85,55 80,75 C 75,90 30,90 20,80',
         points: [
           { x: 0.2, y: 0.2 },
           { x: 0.35, y: 0.12 },
@@ -101,13 +101,6 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
           { x: 0.75, y: 0.25 },
           { x: 0.72, y: 0.38 },
           { x: 0.6, y: 0.48 },
-          { x: 0.45, y: 0.5 },
-        ],
-      },
-      {
-        id: '3-2',
-        svgPath: 'M 45,50 C 55,50 85,55 80,75 C 75,90 30,90 20,80',
-        points: [
           { x: 0.45, y: 0.5 },
           { x: 0.6, y: 0.52 },
           { x: 0.78, y: 0.58 },
@@ -127,7 +120,7 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
     strokes: [
       {
         id: '4-1',
-        svgPath: 'M 65,15 L 20,60 L 80,60',
+        svgPath: 'M 65,15 L 20,60 L 80,60 L 65,60 L 65,85',
         points: [
           { x: 0.65, y: 0.15 },
           { x: 0.5, y: 0.32 },
@@ -136,15 +129,7 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
           { x: 0.4, y: 0.6 },
           { x: 0.6, y: 0.6 },
           { x: 0.8, y: 0.6 },
-        ],
-      },
-      {
-        id: '4-2',
-        svgPath: 'M 65,15 L 65,85',
-        points: [
-          { x: 0.65, y: 0.15 },
-          { x: 0.65, y: 0.35 },
-          { x: 0.65, y: 0.55 },
+          { x: 0.65, y: 0.6 },
           { x: 0.65, y: 0.7 },
           { x: 0.65, y: 0.85 },
         ],
@@ -158,20 +143,13 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
     strokes: [
       {
         id: '5-1',
-        svgPath: 'M 75,15 L 25,15 L 25,45',
+        svgPath: 'M 75,15 L 25,15 L 25,45 C 35,40 55,38 70,45 C 85,55 85,75 65,85 C 45,92 25,85 20,75',
         points: [
           { x: 0.75, y: 0.15 },
           { x: 0.55, y: 0.15 },
           { x: 0.35, y: 0.15 },
           { x: 0.25, y: 0.15 },
           { x: 0.25, y: 0.3 },
-          { x: 0.25, y: 0.45 },
-        ],
-      },
-      {
-        id: '5-2',
-        svgPath: 'M 25,45 C 35,40 55,38 70,45 C 85,55 85,75 65,85 C 45,92 25,85 20,75',
-        points: [
           { x: 0.25, y: 0.45 },
           { x: 0.4, y: 0.4 },
           { x: 0.55, y: 0.4 },
@@ -247,7 +225,7 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
     strokes: [
       {
         id: '8-1',
-        svgPath: 'M 50,48 C 30,42 22,30 28,20 C 35,10 65,10 72,20 C 78,30 70,42 50,48',
+        svgPath: 'M 50,48 C 30,42 22,30 28,20 C 35,10 65,10 72,20 C 78,30 70,42 50,48 C 30,54 18,68 25,80 C 32,92 68,92 75,80 C 82,68 70,54 50,48',
         points: [
           { x: 0.5, y: 0.48 },
           { x: 0.38, y: 0.44 },
@@ -260,13 +238,6 @@ export const numberDefinitions: Record<number, NumberDefinition> = {
           { x: 0.75, y: 0.28 },
           { x: 0.72, y: 0.38 },
           { x: 0.62, y: 0.44 },
-          { x: 0.5, y: 0.48 },
-        ],
-      },
-      {
-        id: '8-2',
-        svgPath: 'M 50,48 C 30,54 18,68 25,80 C 32,92 68,92 75,80 C 82,68 70,54 50,48',
-        points: [
           { x: 0.5, y: 0.48 },
           { x: 0.38, y: 0.52 },
           { x: 0.25, y: 0.6 },

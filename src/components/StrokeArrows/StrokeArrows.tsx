@@ -36,13 +36,9 @@ export function StrokeArrows({
     const animate = () => {
       context.clearRect(0, 0, width, height)
 
-      // Draw arrows at intervals along path
-      const numArrows = Math.min(4, stroke.points.length - 1)
-      const spacing = Math.max(1, Math.floor(stroke.points.length / numArrows))
-      timeRef.current = (timeRef.current + 0.02) % 1
+      timeRef.current = (timeRef.current + 0.005) % 1
 
-      for (let idx = 0; idx < numArrows; idx++) {
-        const i = Math.min(idx * spacing, stroke.points.length - 2)
+      for (let i = 0; i < stroke.points.length - 1; i++) {
         const point = stroke.points[i]
         const nextPoint = stroke.points[i + 1]
 
@@ -57,12 +53,10 @@ export function StrokeArrows({
         const dy = nextY - y
         const angle = Math.atan2(dy, dx)
 
-        // Pulsing opacity
-        const pulse = 0.5 + 0.5 * Math.sin(timeRef.current * Math.PI * 2 + idx * 0.5)
+        const pulse = 0.4 + 0.6 * Math.sin(timeRef.current * Math.PI * 2 + i * 0.3)
         context.globalAlpha = pulse
 
-        // Draw arrow
-        drawArrow(context, x, y, angle, 16)
+        drawArrow(context, x, y, angle, 14)
       }
 
       context.globalAlpha = 1

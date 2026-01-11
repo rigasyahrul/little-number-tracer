@@ -13,7 +13,7 @@ class AudioManager {
     // In production, these would load from actual audio files
 
     this.sounds['success'] = new Howl({
-      src: ['data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA=='],
+      src: ['/audio/success.ogg'],
       preload: true,
       volume: 0.5,
     })

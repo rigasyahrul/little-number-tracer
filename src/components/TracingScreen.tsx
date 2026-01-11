@@ -161,7 +161,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   const renderStrokeInfo = () =>
     currentStroke && (
       <div className={`${isLandscape ? 'text-base' : 'text-lg'} font-semibold text-text-dark`}>
-        Stroke {state.currentStrokeIndex + 1} of {numberDef.strokes.length}
+        Progress: {Math.round(state.pathCoverage * 100)}%
       </div>
     )
 
