@@ -4,9 +4,10 @@ export type MascotState = 'idle' | 'guiding' | 'happy' | 'sad' | 'celebrate'
 
 interface MascotProps {
   state?: MascotState
+  size?: 'normal' | 'small'
 }
 
-export function Mascot({ state = 'idle' }: MascotProps) {
+export function Mascot({ state = 'idle', size = 'normal' }: MascotProps) {
   const [displayState, setDisplayState] = useState<MascotState>(state)
 
   useEffect(() => {
@@ -57,13 +58,17 @@ export function Mascot({ state = 'idle' }: MascotProps) {
     }
   }
 
+  const sizeClasses = size === 'small' 
+    ? 'w-12 h-12 text-2xl border-2' 
+    : 'w-32 h-32 text-6xl border-4'
+
   return (
     <div
       className={`
         flex items-center justify-center
-        w-32 h-32 bg-primary-yellow rounded-full
-        shadow-lg border-4 border-primary-green
-        text-6xl ${getAnimation()}
+        ${sizeClasses} bg-primary-yellow rounded-full
+        shadow-lg border-primary-green
+        ${getAnimation()}
       `}
     >
       {getEmoji()}

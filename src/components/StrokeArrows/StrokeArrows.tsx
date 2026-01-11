@@ -86,6 +86,7 @@ export function StrokeArrows({
         top: 0,
         left: 0,
         pointerEvents: 'none',
+        zIndex: 10,
       }}
     />
   )

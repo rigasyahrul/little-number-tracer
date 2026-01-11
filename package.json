@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:lan": "echo '\\n📱 Your local IP:' && hostname -I | awk '{print $1}' && echo '\\nOpen http://<IP>:4173 on your tablet\\n' && vite preview"
   },
   "dependencies": {
     "react": "^19.2.0",

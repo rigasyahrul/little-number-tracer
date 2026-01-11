@@ -59,8 +59,10 @@ export function App() {
         )}
         {view === 'tracing' && (
           <TracingScreen
+            key={selectedNumber}
             number={selectedNumber}
             onComplete={() => handleBackToGallery()}
+            onSelectNumber={(n) => setSelectedNumber(n)}
           />
         )}
         {view === 'freeDraw' && (

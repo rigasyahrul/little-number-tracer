@@ -79,7 +79,7 @@ export function NumberPath({
         d={scaledPaths.backgroundPath}
         fill="none"
         stroke="#CCCCCC"
-        strokeWidth={24}
+        strokeWidth={48}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
