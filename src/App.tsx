@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { NumberGallery } from './components/NumberGallery'
 import { TracingScreen } from './components/TracingScreen'
 import { FreeDrawScreen } from './components/FreeDrawScreen'
+import { UpdateBanner } from './components/UpdateBanner'
 import { useProgressStore } from './stores/progressStore'
+import { useVersionCheck } from './hooks/useVersionCheck'
 
 type AppView = 'gallery' | 'tracing' | 'freeDraw'
 
@@ -10,6 +12,7 @@ export function App() {
   const [view, setView] = useState<AppView>('gallery')
   const [selectedNumber, setSelectedNumber] = useState<number>(0)
   const { hydrate } = useProgressStore()
+  const { hasUpdate } = useVersionCheck()
 
   useEffect(() => {
     hydrate()
@@ -69,6 +72,9 @@ export function App() {
           <FreeDrawScreen onClose={handleBackToGallery} />
         )}
       </main>
+
+      {/* Update Banner */}
+      {hasUpdate && <UpdateBanner />}
     </div>
   )
 }
