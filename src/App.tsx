@@ -11,6 +11,7 @@ type AppView = 'gallery' | 'tracing' | 'freeDraw'
 export function App() {
   const [view, setView] = useState<AppView>('gallery')
   const [selectedNumber, setSelectedNumber] = useState<number>(0)
+  const [dismissedUpdate, setDismissedUpdate] = useState(false)
   const { hydrate } = useProgressStore()
   const { hasUpdate } = useVersionCheck()
 
@@ -74,7 +75,9 @@ export function App() {
       </main>
 
       {/* Update Banner */}
-      {hasUpdate && <UpdateBanner />}
+      {hasUpdate && !dismissedUpdate && (
+        <UpdateBanner onDismiss={() => setDismissedUpdate(true)} />
+      )}
     </div>
   )
 }

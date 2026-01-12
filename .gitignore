@@ -28,3 +28,6 @@ bdd-kit
 .beads/beads.db
 .beads/daemon.lock
 
+# Generated at build time
+public/version.json
+

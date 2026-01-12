@@ -1,8 +1,9 @@
 interface UpdateBannerProps {
   onReload?: () => void
+  onDismiss?: () => void
 }
 
-export function UpdateBanner({ onReload }: UpdateBannerProps) {
+export function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps) {
   const handleReload = () => {
     onReload?.()
     window.location.reload()
@@ -20,12 +21,23 @@ export function UpdateBanner({ onReload }: UpdateBannerProps) {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleReload}
-          className="px-6 py-2 bg-primary-green text-text-light rounded-lg font-bold hover:bg-green-600 transition-colors whitespace-nowrap"
-        >
-          Reload
-        </button>
+        <div className="flex items-center gap-2">
+          {onDismiss && (
+            <button
+              onClick={onDismiss}
+              className="px-4 py-2 text-text-dark opacity-70 hover:opacity-100 transition-opacity whitespace-nowrap"
+              aria-label="Dismiss"
+            >
+              Later
+            </button>
+          )}
+          <button
+            onClick={handleReload}
+            className="px-6 py-2 bg-primary-green text-text-light rounded-lg font-bold hover:bg-green-600 transition-colors whitespace-nowrap"
+          >
+            Reload
+          </button>
+        </div>
       </div>
     </div>
   )
