@@ -1,9 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+
+// Read version from public/version.json
+let appVersion = 'dev'
+try {
+  const versionData = JSON.parse(
+    readFileSync(join(__dirname, 'public/version.json'), 'utf-8')
+  )
+  appVersion = versionData.version
+} catch {
+  // If version.json doesn't exist yet, use 'dev'
+  appVersion = 'dev'
+}
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
+  },
   server: {
     host: true,
   },
