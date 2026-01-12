@@ -49,3 +49,17 @@ button,
 a {
   @apply transition-all duration-200;
 }
+
+/* Slide-up animation for banners */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
