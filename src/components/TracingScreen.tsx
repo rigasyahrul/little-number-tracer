@@ -85,7 +85,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
 
   useEffect(() => {
     incrementAttempt(number)
-  }, [])
+  }, [incrementAttempt, number])
 
   const currentStroke = getCurrentStroke()
 
@@ -120,12 +120,8 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
           }))
           handleStrokeChange(normalized)
         }}
-        onStrokeEnd={(points) => {
-          const normalized = points.map((p) => ({
-            x: p.x / canvasWidth,
-            y: p.y / canvasHeight,
-          }))
-          handleStrokeEnd(normalized)
+        onStrokeEnd={() => {
+          handleStrokeEnd()
         }}
       />
     </div>

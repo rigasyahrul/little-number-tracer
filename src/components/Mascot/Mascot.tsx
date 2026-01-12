@@ -11,7 +11,9 @@ export function Mascot({ state = 'idle', size = 'normal' }: MascotProps) {
   const [displayState, setDisplayState] = useState<MascotState>(state)
 
   useEffect(() => {
-    setDisplayState(state)
+    // Sync displayState with prop and handle auto-revert for transient states
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDisplayState((current) => (current !== state ? state : current))
 
     // Auto-revert from guiding to idle
     if (state === 'guiding') {

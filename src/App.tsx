@@ -13,7 +13,7 @@ export function App() {
 
   useEffect(() => {
     hydrate()
-  }, [])
+  }, [hydrate])
 
   const handleSelectNumber = (num: number) => {
     setSelectedNumber(num)

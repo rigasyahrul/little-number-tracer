@@ -290,6 +290,7 @@ const FreeDrawCanvas = React.forwardRef<HTMLCanvasElement, FreeDrawCanvasProps>(
 
     contextRef.current = context
     isInitializedRef.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height])
 
   // Handle clear

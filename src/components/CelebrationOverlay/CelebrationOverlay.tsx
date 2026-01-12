@@ -7,6 +7,16 @@ interface CelebrationOverlayProps {
   duration?: number
 }
 
+// Generate star positions outside component to avoid purity issues
+const generateStars = () =>
+  [...Array(12)].map((_, i) => ({
+    left: Math.random() * 100,
+    duration: 2 + Math.random() * 2,
+    delay: i * 0.1,
+  }))
+
+const STARS = generateStars()
+
 export function CelebrationOverlay({
   show,
   onClose,
@@ -16,6 +26,8 @@ export function CelebrationOverlay({
 
   useEffect(() => {
     if (show) {
+      // Sync visibility state and play celebration sound
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(true)
       audioManager.playSuccess()
 
@@ -49,15 +61,15 @@ export function CelebrationOverlay({
 
         {/* Falling stars animation */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(12)].map((_, i) => (
+          {STARS.map((star, i) => (
             <div
               key={i}
               className="absolute text-3xl animate-pulse"
               style={{
-                left: `${Math.random() * 100}%`,
+                left: `${star.left}%`,
                 top: `-20px`,
-                animation: `fall ${2 + Math.random() * 2}s linear forwards`,
-                animationDelay: `${i * 0.1}s`,
+                animation: `fall ${star.duration}s linear forwards`,
+                animationDelay: `${star.delay}s`,
               }}
             >
               ⭐

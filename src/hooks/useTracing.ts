@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import type { NumberDefinition, StrokePoint } from '../types/tracing'
 
-const PATH_TOLERANCE = 0.05
+const PATH_TOLERANCE = 0.025
 const COMPLETION_THRESHOLD = 0.99
 
 interface TracingState {
@@ -58,27 +58,24 @@ export function useTracing({ numberDef, onComplete }: UseTracingOptions) {
     [state.isComplete, numberDef]
   )
 
-  const handleStrokeEnd = useCallback(
-    (_userPoints: Array<StrokePoint>) => {
-      if (state.isComplete) return
+  const handleStrokeEnd = useCallback(() => {
+    if (state.isComplete) return
 
-      const stroke = numberDef.strokes[0]
-      if (!stroke) return
+    const stroke = numberDef.strokes[0]
+    if (!stroke) return
 
-      const coverage = coveredPointsRef.current.size / stroke.points.length
+    const coverage = coveredPointsRef.current.size / stroke.points.length
 
-      if (coverage >= COMPLETION_THRESHOLD) {
-        setState((prev) => ({
-          ...prev,
-          isComplete: true,
-          accuracy: coverage,
-          pathCoverage: coverage,
-        }))
-        onComplete?.(coverage)
-      }
-    },
-    [state.isComplete, numberDef, onComplete]
-  )
+    if (coverage >= COMPLETION_THRESHOLD) {
+      setState((prev) => ({
+        ...prev,
+        isComplete: true,
+        accuracy: coverage,
+        pathCoverage: coverage,
+      }))
+      onComplete?.(coverage)
+    }
+  }, [state.isComplete, numberDef, onComplete])
 
   const reset = useCallback(() => {
     coveredPointsRef.current = new Set()

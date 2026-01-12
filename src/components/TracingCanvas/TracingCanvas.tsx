@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 
 interface Point {
   x: number
@@ -24,7 +24,9 @@ export function TracingCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
-  const [currentStroke, setCurrentStroke] = useState<Point[]>([])
+  // currentStroke is managed via functional updates in event handlers
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_currentStroke, setCurrentStroke] = useState<Point[]>([])
 
   // Initialize canvas
   useEffect(() => {
@@ -49,77 +51,101 @@ export function TracingCanvas({
     contextRef.current = context
   }, [width, height])
 
-  // Handle clear
+  // Handle clear - syncs canvas clearing with external trigger
   useEffect(() => {
     if (clearTrigger > 0) {
       const context = contextRef.current
       if (context) {
         context.clearRect(0, 0, width, height)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentStroke([])
       }
     }
   }, [clearTrigger, width, height])
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
-    const { x, y } = getPointerCoordinates(e)
-    const newStroke: Point[] = [{ x, y, t: Date.now() }]
-    setCurrentStroke(newStroke)
-    setIsDrawing(true)
+  const getPointerCoordinates = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>): { x: number; y: number } => {
+      const canvas = canvasRef.current
+      if (!canvas) return { x: 0, y: 0 }
 
-    const context = contextRef.current
-    if (context) {
-      context.beginPath()
-      context.moveTo(x, y)
-    }
-  }
+      const rect = canvas.getBoundingClientRect()
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
+    },
+    []
+  )
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
-    e.preventDefault()
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      e.preventDefault()
+      const { x, y } = getPointerCoordinates(e)
+      const timestamp = Date.now()
+      const newStroke: Point[] = [{ x, y, t: timestamp }]
+      setCurrentStroke(newStroke)
+      setIsDrawing(true)
 
-    const { x, y } = getPointerCoordinates(e)
-    const newPoint = { x, y, t: Date.now() }
-    const newStroke = [...currentStroke, newPoint]
-    setCurrentStroke(newStroke)
+      const context = contextRef.current
+      if (context) {
+        context.beginPath()
+        context.moveTo(x, y)
+      }
+    },
+    [getPointerCoordinates]
+  )
 
-    const context = contextRef.current
-    if (context) {
-      context.lineTo(x, y)
-      context.stroke()
-    }
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!isDrawing) return
+      e.preventDefault()
 
-    onStrokeChange?.(newStroke)
-  }
+      const { x, y } = getPointerCoordinates(e)
+      const timestamp = Date.now()
+      const newPoint = { x, y, t: timestamp }
+      setCurrentStroke((prevStroke) => {
+        const newStroke = [...prevStroke, newPoint]
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
-    e.preventDefault()
+        const context = contextRef.current
+        if (context) {
+          context.lineTo(x, y)
+          context.stroke()
+        }
 
-    setIsDrawing(false)
-    onStrokeEnd?.(currentStroke)
-  }
+        onStrokeChange?.(newStroke)
+        return newStroke
+      })
+    },
+    [isDrawing, getPointerCoordinates, onStrokeChange]
+  )
 
-  const handlePointerCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
-    e.preventDefault()
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!isDrawing) return
+      e.preventDefault()
 
-    setIsDrawing(false)
-    onStrokeEnd?.(currentStroke)
-  }
+      setIsDrawing(false)
+      setCurrentStroke((prevStroke) => {
+        onStrokeEnd?.(prevStroke)
+        return prevStroke
+      })
+    },
+    [isDrawing, onStrokeEnd]
+  )
 
-  const getPointerCoordinates = (
-    e: React.PointerEvent<HTMLCanvasElement>
-  ): { x: number; y: number } => {
-    const canvas = canvasRef.current
-    if (!canvas) return { x: 0, y: 0 }
+  const handlePointerCancel = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!isDrawing) return
+      e.preventDefault()
 
-    const rect = canvas.getBoundingClientRect()
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    }
-  }
+      setIsDrawing(false)
+      setCurrentStroke((prevStroke) => {
+        onStrokeEnd?.(prevStroke)
+        return prevStroke
+      })
+    },
+    [isDrawing, onStrokeEnd]
+  )
 
   return (
     <canvas
