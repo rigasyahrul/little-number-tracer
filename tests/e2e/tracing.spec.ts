@@ -2,21 +2,25 @@ import { test, expect } from './fixtures'
 import { traceNumber } from './helpers/traceNumber'
 
 test.describe('Tracing Functionality', () => {
-  test('coverage increases when tracing number 1', async ({ page }) => {
-    await page.goto('/')
+  test.describe('Tracing All Numbers', () => {
+    for (const num of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      test(`coverage increases when tracing number ${num}`, async ({ page }) => {
+        await page.goto('/')
 
-    const viewport = page.viewportSize()
-    const isMobile = viewport && viewport.width < 600
+        const viewport = page.viewportSize()
+        const isMobile = viewport && viewport.width < 600
 
-    if (isMobile) {
-      test.skip()
-      return
+        if (isMobile) {
+          test.skip()
+          return
+        }
+
+        await traceNumber(page, num)
+
+        const celebration = page.getByTestId('celebration-overlay')
+        await expect(celebration).toBeVisible({ timeout: 10000 })
+      })
     }
-
-    await traceNumber(page, 1)
-
-    const celebration = page.getByTestId('celebration-overlay')
-    await expect(celebration).toBeVisible({ timeout: 10000 })
   })
 
   test('clear button resets tracing', async ({ page }) => {
