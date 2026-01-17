@@ -13,6 +13,12 @@ export function useVersionCheck() {
   useEffect(() => {
     const checkVersion = async () => {
       try {
+        // Skip version check for dev versions to avoid constant update prompts during development
+        if (APP_VERSION.startsWith('dev')) {
+          setIsChecking(false)
+          return
+        }
+
         // Add cache-busting query parameter
         const response = await fetch(`/version.json?t=${Date.now()}`, {
           cache: 'no-store',
@@ -25,8 +31,8 @@ export function useVersionCheck() {
 
         const data: VersionData = await response.json()
 
-        // Compare versions
-        if (data.version !== APP_VERSION) {
+        // Compare versions - only show update if server version is different and not a dev version
+        if (data.version !== APP_VERSION && !data.version.startsWith('dev')) {
           console.log(`Version mismatch: current=${APP_VERSION}, server=${data.version}`)
           setHasUpdate(true)
         }

@@ -5,8 +5,9 @@ import { StrokeArrows } from './StrokeArrows/StrokeArrows'
 import { Mascot } from './Mascot/Mascot'
 import { CelebrationOverlay } from './CelebrationOverlay/CelebrationOverlay'
 import { NumberPickerSidebar } from './NumberPickerSidebar'
+import { DebugPanel } from './DebugPanel'
 import { getNumberDefinition } from '../data/numberDefinitions'
-import { useTracing } from '../hooks/useTracing'
+import { useTracing, DEFAULT_COMPLETION_THRESHOLD } from '../hooks/useTracing'
 import { useProgressStore } from '../stores/progressStore'
 
 const CANVAS_WIDTH = 400
@@ -23,6 +24,8 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   const [clearTrigger, setClearTrigger] = useState(0)
   const [mascotState, setMascotState] = useState<'idle' | 'guiding' | 'happy' | 'celebrate'>('idle')
   const [showCelebration, setShowCelebration] = useState(false)
+  const [completionThreshold, setCompletionThreshold] = useState(DEFAULT_COMPLETION_THRESHOLD)
+  const [showDebugPoints, setShowDebugPoints] = useState(false)
   const [isLandscape, setIsLandscape] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     return window.innerWidth > window.innerHeight
@@ -68,6 +71,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
     reset,
   } = useTracing({
     numberDef,
+    completionThreshold,
     onComplete: async (accuracy) => {
       setMascotState('celebrate')
       setShowCelebration(true)
@@ -102,6 +106,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
         width={canvasWidth}
         height={canvasHeight}
         highlightStrokeId={currentStroke?.id}
+        showDebugPoints={showDebugPoints}
       />
       <StrokeArrows
         stroke={currentStroke}
@@ -150,7 +155,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
       className="w-10 h-10 bg-red-500 text-white text-xl font-bold rounded-lg hover:bg-red-600 flex items-center justify-center"
       title="Clear"
     >
-      ✕
+      🗑️
     </button>
   )
 
@@ -165,6 +170,13 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
     return (
       <div className="w-full h-full flex relative">
         <CelebrationOverlay show={showCelebration} />
+        <DebugPanel
+          coverage={state.pathCoverage}
+          threshold={completionThreshold}
+          onThresholdChange={setCompletionThreshold}
+          showPoints={showDebugPoints}
+          onTogglePoints={() => setShowDebugPoints(!showDebugPoints)}
+        />
 
         {/* Left: Canvas area - takes 85% */}
         <div className="w-[85%] h-full flex items-center justify-center">
@@ -193,6 +205,13 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4 relative">
       <CelebrationOverlay show={showCelebration} />
+      <DebugPanel
+        coverage={state.pathCoverage}
+        threshold={completionThreshold}
+        onThresholdChange={setCompletionThreshold}
+        showPoints={showDebugPoints}
+        onTogglePoints={() => setShowDebugPoints(!showDebugPoints)}
+      />
 
       <h2 className="text-4xl font-bold text-text-dark">
         Trace the Number {number}
