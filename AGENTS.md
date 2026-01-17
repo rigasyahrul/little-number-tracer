@@ -2,6 +2,16 @@
 
 This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
+## Quality Gates
+
+**Run these commands before committing any code changes:**
+
+```bash
+npm run build         # TypeScript check + Vite build
+npm run lint          # ESLint
+npm run test          # Playwright e2e tests
+```
+
 ## Quick Reference
 
 ```bash
