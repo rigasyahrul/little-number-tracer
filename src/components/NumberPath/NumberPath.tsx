@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import type { NumberDefinition } from '../../types/tracing'
 
 interface NumberPathProps {
@@ -7,40 +6,7 @@ interface NumberPathProps {
   height?: number
   highlightStrokeId?: string
   onPathStrokeId?: string
-}
-
-function scaleSvgPath(path: string, width: number, height: number): string {
-  const normalizedPath = path.replace(/,/g, ' ')
-  const tokens = normalizedPath.match(/[MLCQASZHVZ]|[+-]?\d*\.?\d+/gi) || []
-  const result: string[] = []
-  let isXCoord = true
-  
-  for (const token of tokens) {
-    if (/^[MLCQASZHVZ]$/i.test(token)) {
-      result.push(token)
-      if (token.toUpperCase() === 'H') {
-        isXCoord = true
-      } else if (token.toUpperCase() === 'V') {
-        isXCoord = false
-      } else if (token.toUpperCase() === 'Z') {
-        // Z doesn't change coordinate state
-      } else {
-        isXCoord = true
-      }
-    } else {
-      const value = parseFloat(token)
-      if (!isNaN(value)) {
-        if (isXCoord) {
-          result.push(String((value / 100) * width))
-        } else {
-          result.push(String((value / 100) * height))
-        }
-        isXCoord = !isXCoord
-      }
-    }
-  }
-  
-  return result.join(' ')
+  showDebugPoints?: boolean
 }
 
 export function NumberPath({
@@ -49,23 +15,17 @@ export function NumberPath({
   height = 600,
   highlightStrokeId,
   onPathStrokeId,
+  showDebugPoints = false,
 }: NumberPathProps) {
-  const scaledPaths = useMemo(() => {
-    const backgroundPath = scaleSvgPath(numberDef.svgPath, width, height)
-    const strokePaths = numberDef.strokes.map((stroke) => ({
-      id: stroke.id,
-      path: scaleSvgPath(stroke.svgPath, width, height),
-    }))
-    return { backgroundPath, strokePaths }
-  }, [numberDef, width, height])
-
-  const startX = numberDef.startPoint.x * width
-  const startY = numberDef.startPoint.y * height
+  const startX = numberDef.startPoint.x * 100
+  const startY = numberDef.startPoint.y * 100
 
   return (
     <svg
       width={width}
       height={height}
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
       style={{
         position: 'absolute',
         top: 0,
@@ -76,42 +36,42 @@ export function NumberPath({
     >
       {/* Thick gray background number */}
       <path
-        d={scaledPaths.backgroundPath}
+        d={numberDef.svgPath}
         fill="none"
         stroke="#CCCCCC"
-        strokeWidth={48}
+        strokeWidth={6}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
 
       {/* Dotted guide paths for each stroke */}
-      {scaledPaths.strokePaths.map((strokePath) => {
-        const isHighlighted = strokePath.id === highlightStrokeId
-        const isOnPath = strokePath.id === onPathStrokeId
+      {numberDef.strokes.map((stroke) => {
+        const isHighlighted = stroke.id === highlightStrokeId
+        const isOnPath = stroke.id === onPathStrokeId
 
         let strokeColor = '#FF9500'
-        let strokeWidth = 4
-        let dashArray = '8,16'
+        let strokeWidthVal = 0.5
+        let dashArray = '1,2'
         let filter = ''
 
         if (isOnPath) {
           strokeColor = '#34C759'
-          strokeWidth = 5
-          dashArray = '8,16'
+          strokeWidthVal = 0.6
+          dashArray = '1,2'
           filter = 'url(#glowFilter)'
         } else if (isHighlighted) {
           strokeColor = '#FF9500'
-          strokeWidth = 5
-          dashArray = '8,16'
+          strokeWidthVal = 0.6
+          dashArray = '1,2'
         }
 
         return (
           <path
-            key={strokePath.id}
-            d={strokePath.path}
+            key={stroke.id}
+            d={stroke.svgPath}
             fill="none"
             stroke={strokeColor}
-            strokeWidth={strokeWidth}
+            strokeWidth={strokeWidthVal}
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray={dashArray}
@@ -123,7 +83,7 @@ export function NumberPath({
       {/* Glow filter for active path */}
       <defs>
         <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+          <feGaussianBlur stdDeviation="0.5" result="coloredBlur" />
           <feMerge>
             <feMergeNode in="coloredBlur" />
             <feMergeNode in="SourceGraphic" />
@@ -135,10 +95,10 @@ export function NumberPath({
       <circle
         cx={startX}
         cy={startY}
-        r={14}
+        r={1.75}
         fill="#FFFFFF"
         stroke="#F4D35E"
-        strokeWidth={3}
+        strokeWidth={0.4}
       />
       <text
         x={startX}
@@ -146,12 +106,39 @@ export function NumberPath({
         textAnchor="middle"
         dominantBaseline="middle"
         fill="#F4D35E"
-        fontSize="11"
+        fontSize="1.4"
         fontWeight="bold"
         fontFamily="sans-serif"
       >
         START
       </text>
+
+      {/* Debug points - show detection points */}
+      {showDebugPoints && numberDef.strokes.map((stroke) =>
+        stroke.points.map((point, idx) => (
+          <g key={`${stroke.id}-point-${idx}`}>
+            <circle
+              cx={point.x * 100}
+              cy={point.y * 100}
+              r={1}
+              fill="rgba(255, 0, 0, 0.5)"
+              stroke="#FF0000"
+              strokeWidth={0.25}
+            />
+            <text
+              x={point.x * 100}
+              y={point.y * 100}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="#FFFFFF"
+              fontSize="1"
+              fontWeight="bold"
+            >
+              {idx + 1}
+            </text>
+          </g>
+        ))
+      )}
     </svg>
   )
 }
