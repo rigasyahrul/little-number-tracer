@@ -9,11 +9,18 @@ interface DebugPanelProps {
   onTogglePoints?: () => void
 }
 
+declare global {
+  interface Window {
+    _PLAYWRIGHT_TEST_?: boolean
+  }
+}
+
 export function DebugPanel({ coverage, threshold, onThresholdChange, showPoints, onTogglePoints }: DebugPanelProps) {
   const [isOpen, setIsOpen] = useState(true)
 
-  // Only show in development mode
-  if (!import.meta.env.DEV) {
+  // Show in development mode or when running Playwright tests
+  const isPlaywrightTest = typeof window !== 'undefined' && window._PLAYWRIGHT_TEST_
+  if (!import.meta.env.DEV && !isPlaywrightTest) {
     return null
   }
 
@@ -26,6 +33,7 @@ export function DebugPanel({ coverage, threshold, onThresholdChange, showPoints,
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-80 hover:opacity-100"
+        data-testid="debug-toggle"
       >
         🐛 {isOpen ? 'Hide' : 'Debug'}
       </button>
@@ -81,6 +89,7 @@ export function DebugPanel({ coverage, threshold, onThresholdChange, showPoints,
               <button
                 onClick={onTogglePoints}
                 className={`w-full mt-1 py-1 rounded text-xs ${showPoints ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'}`}
+                data-testid="debug-show-points"
               >
                 {showPoints ? '● Hide Points' : '○ Show Points'}
               </button>

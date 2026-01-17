@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 
 const viewports = [
   { name: 'desktop', width: 1280, height: 720 },
@@ -16,11 +16,8 @@ test.describe('Responsive Point Alignment', () => {
 
       await page.waitForTimeout(500)
 
-      const debugBtn = page.locator('text=🐛')
-      if (await debugBtn.isVisible()) {
-        await debugBtn.click()
-        await page.locator('text=Show Points').click()
-      }
+      const showPointsBtn = page.getByTestId('debug-show-points')
+      await showPointsBtn.click()
 
       await page.waitForTimeout(300)
 
