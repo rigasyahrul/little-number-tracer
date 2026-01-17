@@ -137,6 +137,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
       <button
         onClick={handleReset}
         className="px-6 py-3 bg-secondary-coral text-text-light rounded-xl font-bold hover:opacity-90"
+        data-testid="clear-button"
       >
         🗑️ Clear
       </button>
@@ -154,6 +155,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
       onClick={handleReset}
       className="w-10 h-10 bg-red-500 text-white text-xl font-bold rounded-lg hover:bg-red-600 flex items-center justify-center"
       title="Clear"
+      data-testid="clear-button"
     >
       🗑️
     </button>
@@ -169,7 +171,10 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   if (isLandscape) {
     return (
       <div className="w-full h-full flex relative">
-        <CelebrationOverlay show={showCelebration} />
+        <CelebrationOverlay
+          show={showCelebration}
+          duration={typeof window !== 'undefined' && window._PLAYWRIGHT_TEST_ ? 10000 : 3000}
+        />
         <DebugPanel
           coverage={state.pathCoverage}
           threshold={completionThreshold}
@@ -204,7 +209,10 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   // Portrait layout
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4 relative">
-      <CelebrationOverlay show={showCelebration} />
+      <CelebrationOverlay
+        show={showCelebration}
+        duration={typeof window !== 'undefined' && window._PLAYWRIGHT_TEST_ ? 10000 : 3000}
+      />
       <DebugPanel
         coverage={state.pathCoverage}
         threshold={completionThreshold}
