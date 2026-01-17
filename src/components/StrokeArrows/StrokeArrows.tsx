@@ -33,10 +33,20 @@ export function StrokeArrows({
 
     context.scale(dpr, dpr)
 
-    const animate = () => {
+    let lastTime = 0
+    const animate = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime
+      lastTime = currentTime
+
       context.clearRect(0, 0, width, height)
 
-      timeRef.current = (timeRef.current + 0.005) % 1
+      // Very slow fade: ~6 seconds per cycle (3s fade in, 3s fade out)
+      timeRef.current = (timeRef.current + 0.001 * (deltaTime / 16)) % 1
+
+      // All arrows pulse together with same opacity
+      const sineValue = Math.sin(timeRef.current * Math.PI * 2)
+      const pulse = 0.3 + 0.7 * ((sineValue + 1) / 2)
+      context.globalAlpha = pulse
 
       for (let i = 0; i < stroke.points.length - 1; i++) {
         const point = stroke.points[i]
@@ -53,9 +63,6 @@ export function StrokeArrows({
         const dy = nextY - y
         const angle = Math.atan2(dy, dx)
 
-        const pulse = 0.4 + 0.6 * Math.sin(timeRef.current * Math.PI * 2 + i * 0.3)
-        context.globalAlpha = pulse
-
         drawArrow(context, x, y, angle, 14)
       }
 
@@ -63,7 +70,7 @@ export function StrokeArrows({
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    animate()
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
       if (animationRef.current) {

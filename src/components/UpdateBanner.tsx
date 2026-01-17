@@ -4,9 +4,19 @@ interface UpdateBannerProps {
 }
 
 export function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps) {
-  const handleReload = () => {
+  const handleUpdate = async () => {
     onReload?.()
-    window.location.reload()
+    // Unregister existing service workers and clear caches to force update
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map((reg) => reg.unregister()))
+    }
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map((name) => caches.delete(name)))
+    }
+    // Force hard reload bypassing all caches
+    window.location.href = window.location.origin + '?update=' + Date.now()
   }
 
   return (
@@ -17,7 +27,7 @@ export function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps) {
           <div>
             <p className="font-bold text-text-dark">New version available!</p>
             <p className="text-sm text-text-dark opacity-80">
-              Click reload to get the latest features
+              Click update to get the latest features
             </p>
           </div>
         </div>
@@ -32,10 +42,10 @@ export function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps) {
             </button>
           )}
           <button
-            onClick={handleReload}
+            onClick={handleUpdate}
             className="px-6 py-2 bg-primary-green text-text-light rounded-lg font-bold hover:bg-green-600 transition-colors whitespace-nowrap"
           >
-            Reload
+            Update
           </button>
         </div>
       </div>
