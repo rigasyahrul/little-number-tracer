@@ -52,10 +52,8 @@ export function StrokeArrows({
       // Very slow fade: ~6 seconds per cycle (3s fade in, 3s fade out)
       timeRef.current = (timeRef.current + 0.001 * (deltaTime / 16)) % 1
 
-      // All arrows pulse together with same opacity
-      const sineValue = Math.sin(timeRef.current * Math.PI * 2)
-      const pulse = 0.3 + 0.7 * ((sineValue + 1) / 2)
-      context.globalAlpha = pulse
+      // Make arrows transparent
+      context.globalAlpha = 0
 
       for (let i = 0; i < points.length - 1; i++) {
         const point = points[i]
