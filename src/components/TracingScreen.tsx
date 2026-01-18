@@ -76,15 +76,30 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
       setMascotState('celebrate')
       setShowCelebration(true)
       await setCompleted(number, accuracy)
-      setTimeout(() => {
-        onComplete()
-      }, 1500)
     },
   })
 
   const handleReset = () => {
     setClearTrigger((prev) => prev + 1)
     reset()
+  }
+
+  const handleTryAgain = () => {
+    handleReset()
+    setMascotState('idle')
+  }
+
+  const handleNextNumber = () => {
+    const nextNumber = (number + 1) % 10
+    if (onSelectNumber) {
+      onSelectNumber(nextNumber)
+    }
+    handleReset()
+    setMascotState('idle')
+  }
+
+  const handleBackToHome = () => {
+    onComplete()
   }
 
   useEffect(() => {
@@ -173,7 +188,9 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
       <div className="w-full h-full flex relative">
         <CelebrationOverlay
           show={showCelebration}
-          duration={typeof window !== 'undefined' && window._PLAYWRIGHT_TEST_ ? 10000 : 3000}
+          onTryAgain={handleTryAgain}
+          onNextNumber={handleNextNumber}
+          onBackToHome={handleBackToHome}
         />
         <DebugPanel
           coverage={state.pathCoverage}
@@ -183,12 +200,10 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
           onTogglePoints={() => setShowDebugPoints(!showDebugPoints)}
         />
 
-        {/* Left: Canvas area - takes 85% */}
         <div className="w-[85%] h-full flex items-center justify-center">
           {renderCanvas()}
         </div>
 
-        {/* Right: Number picker - takes 15% */}
         {onSelectNumber && (
           <div className="w-[15%] h-full bg-background-cream/50 border-l-2 border-primary-yellow overflow-hidden">
             <NumberPickerSidebar
@@ -198,7 +213,6 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
           </div>
         )}
 
-        {/* Floating clear button - bottom left */}
         <div className="absolute bottom-4 left-4">
           {renderClearButtonLandscape()}
         </div>
@@ -206,12 +220,13 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
     )
   }
 
-  // Portrait layout
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4 relative">
       <CelebrationOverlay
         show={showCelebration}
-        duration={typeof window !== 'undefined' && window._PLAYWRIGHT_TEST_ ? 10000 : 3000}
+        onTryAgain={handleTryAgain}
+        onNextNumber={handleNextNumber}
+        onBackToHome={handleBackToHome}
       />
       <DebugPanel
         coverage={state.pathCoverage}
