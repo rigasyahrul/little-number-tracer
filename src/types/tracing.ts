@@ -5,7 +5,7 @@ export interface StrokePoint {
 
 export interface Stroke {
   id: string
-  points: StrokePoint[]
+  points?: StrokePoint[]
   svgPath: string // SVG path data with curves (in normalized 0-100 space)
 }
 

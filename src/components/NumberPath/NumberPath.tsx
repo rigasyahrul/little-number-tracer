@@ -1,4 +1,12 @@
-import type { NumberDefinition } from '../../types/tracing'
+import type { NumberDefinition, Stroke } from '../../types/tracing'
+import { sampleSvgPathPoints } from '../../utils/svgPathSampler'
+
+function getStrokePoints(stroke: Stroke) {
+  if (stroke.points && stroke.points.length > 0) {
+    return stroke.points
+  }
+  return sampleSvgPathPoints(stroke.svgPath)
+}
 
 interface NumberPathProps {
   numberDef: NumberDefinition
@@ -113,9 +121,10 @@ export function NumberPath({
         START
       </text>
 
-      {/* Debug points - show detection points */}
-      {showDebugPoints && numberDef.strokes.map((stroke) =>
-        stroke.points.map((point, idx) => (
+      {/* Debug points - show detection points (generated from SVG path) */}
+      {showDebugPoints && numberDef.strokes.map((stroke) => {
+        const points = getStrokePoints(stroke)
+        return points.map((point, idx) => (
           <g key={`${stroke.id}-point-${idx}`}>
             <circle
               cx={point.x * 100}
@@ -138,7 +147,7 @@ export function NumberPath({
             </text>
           </g>
         ))
-      )}
+      })}
     </svg>
   )
 }
