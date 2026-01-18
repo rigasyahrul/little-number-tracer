@@ -85,11 +85,13 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   }
 
   const handleTryAgain = () => {
+    setShowCelebration(false)
     handleReset()
     setMascotState('idle')
   }
 
   const handleNextNumber = () => {
+    setShowCelebration(false)
     const nextNumber = (number + 1) % 10
     if (onSelectNumber) {
       onSelectNumber(nextNumber)
@@ -99,6 +101,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
   }
 
   const handleBackToHome = () => {
+    setShowCelebration(false)
     onComplete()
   }
 
