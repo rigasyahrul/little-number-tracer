@@ -30,6 +30,7 @@ dist-ssr
 /playwright/.cache/
 
 bdd-kit
+cm
 
 .beads/beads.db
 .beads/daemon.lock

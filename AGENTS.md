@@ -1,5 +1,31 @@
 # Agent Instructions
 
+## Quick Start (cm prime summary)
+
+Use cm to searching code more faster, `./cm`
+
+> Run `cm prime` for full AI agent guide
+
+```bash
+# Discovery
+cm stats .                        # Repo overview
+cm map . --level 2 --format ai    # File structure
+
+# Find & understand
+cm query <symbol> --format ai     # Find symbols
+cm callers <symbol> --format ai   # Who calls this?
+cm callees <symbol> --format ai   # What does it call?
+cm trace <from> <to> --format ai  # Call path
+
+# Changes
+cm diff main --format ai          # Symbol-level diff
+cm impact <symbol>                # Definition + callers + tests
+```
+
+**Key flags:** `--format ai` (compact), `--exact` (precise match), `--limit N`, `--extensions <csv>`
+
+## Beads Overview
+
 This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
 ## Quality Gates
