@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { audioManager } from '../../audio/AudioManager'
 
 interface CelebrationOverlayProps {
@@ -23,18 +23,13 @@ export function CelebrationOverlay({
   onNextNumber,
   onBackToHome,
 }: CelebrationOverlayProps) {
-  const [isVisible, setIsVisible] = useState(show)
+  useEffect(() => {
+    if (show) {
+      audioManager.playSuccess()
+    }
+  }, [show])
 
-  if (show && !isVisible) {
-    setIsVisible(true)
-    audioManager.playSuccess()
-  }
-
-  if (!show && isVisible) {
-    setIsVisible(false)
-  }
-
-  if (!isVisible) return null
+  if (!show) return null
 
   return (
     <div
@@ -51,7 +46,6 @@ export function CelebrationOverlay({
             <button
               onClick={() => {
                 onTryAgain?.()
-                setIsVisible(false)
               }}
               className="flex items-center justify-center gap-3 px-6 py-4 bg-primary-green text-text-light rounded-xl font-bold hover:opacity-90 text-lg"
               data-testid="try-again-button"
@@ -63,7 +57,6 @@ export function CelebrationOverlay({
             <button
               onClick={() => {
                 onNextNumber?.()
-                setIsVisible(false)
               }}
               className="flex items-center justify-center gap-3 px-6 py-4 bg-primary-yellow text-text-dark rounded-xl font-bold hover:opacity-90 text-lg"
               data-testid="next-number-button"
@@ -75,7 +68,6 @@ export function CelebrationOverlay({
             <button
               onClick={() => {
                 onBackToHome?.()
-                setIsVisible(false)
               }}
               className="flex items-center justify-center gap-3 px-6 py-4 bg-text-light text-text-dark rounded-xl font-bold hover:bg-gray-100 text-lg"
               data-testid="back-home-button"
