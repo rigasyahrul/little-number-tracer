@@ -1,5 +1,13 @@
-import { useState, useCallback, useRef } from 'react'
-import type { NumberDefinition, StrokePoint } from '../types/tracing'
+import { useState, useCallback, useRef, useMemo } from 'react'
+import type { NumberDefinition, Stroke, StrokePoint } from '../types/tracing'
+import { sampleSvgPathPoints } from '../utils/svgPathSampler'
+
+function getStrokePoints(stroke: Stroke): StrokePoint[] {
+  if (stroke.points && stroke.points.length > 0) {
+    return stroke.points
+  }
+  return sampleSvgPathPoints(stroke.svgPath)
+}
 
 const PATH_TOLERANCE = 0.03
 export const DEFAULT_COMPLETION_THRESHOLD = 0.92
@@ -25,13 +33,25 @@ export function useTracing({ numberDef, onComplete, completionThreshold = DEFAUL
 
   const coveredPointsRef = useRef<Map<string, Set<number>>>(new Map())
 
+  const strokePointsMap = useMemo(() => {
+    const map = new Map<string, StrokePoint[]>()
+    for (const stroke of numberDef.strokes) {
+      map.set(stroke.id, getStrokePoints(stroke))
+    }
+    return map
+  }, [numberDef])
+
   const getCurrentStroke = useCallback(() => {
     return numberDef.strokes[0]
   }, [numberDef])
 
   const getTotalPoints = useCallback(() => {
-    return numberDef.strokes.reduce((total, stroke) => total + stroke.points.length, 0)
-  }, [numberDef])
+    let total = 0
+    strokePointsMap.forEach((points) => {
+      total += points.length
+    })
+    return total
+  }, [strokePointsMap])
 
   const getTotalCovered = useCallback(() => {
     let total = 0
@@ -51,9 +71,10 @@ export function useTracing({ numberDef, onComplete, completionThreshold = DEFAUL
             coveredPointsRef.current.set(stroke.id, new Set())
           }
           const coveredSet = coveredPointsRef.current.get(stroke.id)!
+          const points = strokePointsMap.get(stroke.id) ?? []
 
-          for (let i = 0; i < stroke.points.length; i++) {
-            const pathPoint = stroke.points[i]
+          for (let i = 0; i < points.length; i++) {
+            const pathPoint = points[i]
             const dx = userPoint.x - pathPoint.x
             const dy = userPoint.y - pathPoint.y
             const distance = Math.sqrt(dx * dx + dy * dy)
@@ -74,7 +95,7 @@ export function useTracing({ numberDef, onComplete, completionThreshold = DEFAUL
         pathCoverage: coverage,
       }))
     },
-    [state.isComplete, numberDef, getTotalPoints, getTotalCovered]
+    [state.isComplete, numberDef, strokePointsMap, getTotalPoints, getTotalCovered]
   )
 
   const handleStrokeEnd = useCallback(() => {

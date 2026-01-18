@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import type { Stroke } from '../../types/tracing'
+import { sampleSvgPathPoints } from '../../utils/svgPathSampler'
 
 interface StrokeArrowsProps {
   stroke: Stroke | undefined
@@ -18,9 +19,17 @@ export function StrokeArrows({
   const animationRef = useRef<number | null>(null)
   const timeRef = useRef(0)
 
+  const points = useMemo(() => {
+    if (!stroke) return []
+    if (stroke.points && stroke.points.length > 0) {
+      return stroke.points
+    }
+    return sampleSvgPathPoints(stroke.svgPath)
+  }, [stroke])
+
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !isCurrentStroke || !stroke || !stroke.points || stroke.points.length < 2) return
+    if (!canvas || !isCurrentStroke || !stroke || points.length < 2) return
 
     const dpr = window.devicePixelRatio || 1
     canvas.width = width * dpr
@@ -48,9 +57,9 @@ export function StrokeArrows({
       const pulse = 0.3 + 0.7 * ((sineValue + 1) / 2)
       context.globalAlpha = pulse
 
-      for (let i = 0; i < stroke.points.length - 1; i++) {
-        const point = stroke.points[i]
-        const nextPoint = stroke.points[i + 1]
+      for (let i = 0; i < points.length - 1; i++) {
+        const point = points[i]
+        const nextPoint = points[i + 1]
 
         if (!point || !nextPoint) continue
 
@@ -77,7 +86,7 @@ export function StrokeArrows({
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [stroke, width, height, isCurrentStroke])
+  }, [stroke, points, width, height, isCurrentStroke])
 
   return (
     <canvas

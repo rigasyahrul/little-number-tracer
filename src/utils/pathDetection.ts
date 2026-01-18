@@ -1,20 +1,29 @@
 import type { Stroke, StrokePoint } from '../types/tracing'
+import { sampleSvgPathPoints } from './svgPathSampler'
 
 interface FlattenedStroke {
   points: Array<StrokePoint & { cumulativeLength: number }>
   totalLength: number
 }
 
+function getStrokePoints(stroke: Stroke): StrokePoint[] {
+  if (stroke.points && stroke.points.length > 0) {
+    return stroke.points
+  }
+  return sampleSvgPathPoints(stroke.svgPath)
+}
+
 /**
  * Preprocess stroke to compute cumulative lengths
  */
 export function flattenStroke(stroke: Stroke): FlattenedStroke {
+  const strokePoints = getStrokePoints(stroke)
   const points: Array<StrokePoint & { cumulativeLength: number }> = []
   let cumulativeLength = 0
 
-  stroke.points.forEach((point, index) => {
+  strokePoints.forEach((point, index) => {
     if (index > 0) {
-      const prev = stroke.points[index - 1]
+      const prev = strokePoints[index - 1]
       const dx = point.x - prev.x
       const dy = point.y - prev.y
       const distance = Math.sqrt(dx * dx + dy * dy)
@@ -40,11 +49,12 @@ export function findClosestPointOnStroke(
   stroke: Stroke,
   tolerance: number = 0.15
 ): { distance: number; pointIndex: number; segmentProgress: number } | null {
+  const strokePoints = getStrokePoints(stroke)
   let minDistance = Infinity
   let closestIndex = 0
 
-  for (let i = 0; i < stroke.points.length; i++) {
-    const pathPoint = stroke.points[i]
+  for (let i = 0; i < strokePoints.length; i++) {
+    const pathPoint = strokePoints[i]
     const dx = userPoint.x - pathPoint.x
     const dy = userPoint.y - pathPoint.y
     const distance = Math.sqrt(dx * dx + dy * dy)
@@ -55,8 +65,8 @@ export function findClosestPointOnStroke(
     }
 
     // Check distance to segment
-    if (i < stroke.points.length - 1) {
-      const nextPoint = stroke.points[i + 1]
+    if (i < strokePoints.length - 1) {
+      const nextPoint = strokePoints[i + 1]
       const segmentDist = distanceToSegment(userPoint, pathPoint, nextPoint)
       if (segmentDist < minDistance) {
         minDistance = segmentDist
