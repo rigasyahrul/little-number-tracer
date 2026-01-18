@@ -10,7 +10,7 @@ function getStrokePoints(stroke: Stroke): StrokePoint[] {
 }
 
 const PATH_TOLERANCE = 0.03
-export const DEFAULT_COMPLETION_THRESHOLD = 0.92
+export const DEFAULT_COMPLETION_THRESHOLD = 0.99
 
 interface TracingState {
   isComplete: boolean
