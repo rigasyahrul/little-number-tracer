@@ -1,0 +1,45 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Little Number Tracer - Number 5" [level=1] [ref=e5]
+    - button "Back" [ref=e6] [cursor=pointer]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - button "🐛 Hide" [ref=e10] [cursor=pointer]
+        - generic [ref=e11]:
+          - generic [ref=e12]: Debug Panel
+          - generic [ref=e13]:
+            - generic [ref=e14]:
+              - generic [ref=e15]: "Coverage:"
+              - generic [ref=e16]: 0%
+            - generic [ref=e17]:
+              - generic [ref=e18]: "Threshold:"
+              - generic [ref=e19]: 92%
+            - generic [ref=e20]:
+              - generic [ref=e21]: "Status:"
+              - generic [ref=e22]: ✗ Incomplete
+            - generic [ref=e23]:
+              - generic [ref=e24]: "Threshold: 92%"
+              - slider [ref=e25]: "92"
+            - button "Reset (92%)" [ref=e26] [cursor=pointer]
+            - button "○ Show Points" [ref=e27] [cursor=pointer]
+      - generic [ref=e29]:
+        - img:
+          - generic: START
+      - complementary [ref=e32]:
+        - generic [ref=e33]:
+          - button "0" [ref=e34] [cursor=pointer]
+          - button "1" [ref=e35] [cursor=pointer]
+          - button "2" [ref=e36] [cursor=pointer]
+          - button "3" [ref=e37] [cursor=pointer]
+          - button "4" [ref=e38] [cursor=pointer]
+          - button "5" [ref=e39] [cursor=pointer]
+          - button "6" [ref=e40] [cursor=pointer]
+          - button "7" [ref=e41] [cursor=pointer]
+          - button "8" [ref=e42] [cursor=pointer]
+          - button "9" [ref=e43] [cursor=pointer]
+      - button "🗑️" [ref=e45] [cursor=pointer]
+```
