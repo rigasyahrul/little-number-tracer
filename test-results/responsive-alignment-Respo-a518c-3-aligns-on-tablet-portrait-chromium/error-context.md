@@ -1,0 +1,198 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Little Number Tracer - Number 3" [level=1] [ref=e5]
+    - button "Back" [ref=e6] [cursor=pointer]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - button "🐛 Hide" [ref=e10] [cursor=pointer]
+        - generic [ref=e11]:
+          - generic [ref=e12]: Debug Panel
+          - generic [ref=e13]:
+            - generic [ref=e14]:
+              - generic [ref=e15]: "Coverage:"
+              - generic [ref=e16]: 0%
+            - generic [ref=e17]:
+              - generic [ref=e18]: "Threshold:"
+              - generic [ref=e19]: 92%
+            - generic [ref=e20]:
+              - generic [ref=e21]: "Status:"
+              - generic [ref=e22]: ✗ Incomplete
+            - generic [ref=e23]:
+              - generic [ref=e24]: "Threshold: 92%"
+              - slider [ref=e25]: "92"
+            - button "Reset (92%)" [ref=e26] [cursor=pointer]
+            - button "● Hide Points" [active] [ref=e27] [cursor=pointer]
+      - heading "Trace the Number 3" [level=2] [ref=e28]
+      - generic [ref=e29]: 😊
+      - generic [ref=e30]:
+        - img:
+          - generic: START
+          - generic:
+            - generic: "1"
+          - generic:
+            - generic: "2"
+          - generic:
+            - generic: "3"
+          - generic:
+            - generic: "4"
+          - generic:
+            - generic: "5"
+          - generic:
+            - generic: "6"
+          - generic:
+            - generic: "7"
+          - generic:
+            - generic: "8"
+          - generic:
+            - generic: "9"
+          - generic:
+            - generic: "10"
+          - generic:
+            - generic: "11"
+          - generic:
+            - generic: "12"
+          - generic:
+            - generic: "13"
+          - generic:
+            - generic: "14"
+          - generic:
+            - generic: "15"
+          - generic:
+            - generic: "16"
+          - generic:
+            - generic: "17"
+          - generic:
+            - generic: "18"
+          - generic:
+            - generic: "19"
+          - generic:
+            - generic: "20"
+          - generic:
+            - generic: "21"
+          - generic:
+            - generic: "22"
+          - generic:
+            - generic: "23"
+          - generic:
+            - generic: "24"
+          - generic:
+            - generic: "25"
+          - generic:
+            - generic: "26"
+          - generic:
+            - generic: "27"
+          - generic:
+            - generic: "28"
+          - generic:
+            - generic: "29"
+          - generic:
+            - generic: "30"
+          - generic:
+            - generic: "31"
+          - generic:
+            - generic: "32"
+          - generic:
+            - generic: "33"
+          - generic:
+            - generic: "34"
+          - generic:
+            - generic: "35"
+          - generic:
+            - generic: "36"
+          - generic:
+            - generic: "37"
+          - generic:
+            - generic: "38"
+          - generic:
+            - generic: "39"
+          - generic:
+            - generic: "40"
+          - generic:
+            - generic: "41"
+          - generic:
+            - generic: "42"
+          - generic:
+            - generic: "43"
+          - generic:
+            - generic: "44"
+          - generic:
+            - generic: "45"
+          - generic:
+            - generic: "46"
+          - generic:
+            - generic: "47"
+          - generic:
+            - generic: "48"
+          - generic:
+            - generic: "49"
+          - generic:
+            - generic: "50"
+          - generic:
+            - generic: "51"
+          - generic:
+            - generic: "52"
+          - generic:
+            - generic: "53"
+          - generic:
+            - generic: "54"
+          - generic:
+            - generic: "55"
+          - generic:
+            - generic: "56"
+          - generic:
+            - generic: "57"
+          - generic:
+            - generic: "58"
+          - generic:
+            - generic: "59"
+          - generic:
+            - generic: "60"
+          - generic:
+            - generic: "61"
+          - generic:
+            - generic: "62"
+          - generic:
+            - generic: "63"
+          - generic:
+            - generic: "64"
+          - generic:
+            - generic: "65"
+          - generic:
+            - generic: "66"
+          - generic:
+            - generic: "67"
+          - generic:
+            - generic: "68"
+          - generic:
+            - generic: "69"
+          - generic:
+            - generic: "70"
+          - generic:
+            - generic: "71"
+          - generic:
+            - generic: "72"
+          - generic:
+            - generic: "73"
+          - generic:
+            - generic: "74"
+          - generic:
+            - generic: "75"
+          - generic:
+            - generic: "76"
+          - generic:
+            - generic: "77"
+          - generic:
+            - generic: "78"
+          - generic:
+            - generic: "79"
+          - generic:
+            - generic: "80"
+      - generic [ref=e32]: "Progress: 0%"
+      - generic [ref=e33]:
+        - button "🗑️ Clear" [ref=e34] [cursor=pointer]
+        - button "Done" [ref=e35] [cursor=pointer]
+```
