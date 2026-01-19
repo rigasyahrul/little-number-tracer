@@ -54,7 +54,22 @@ export async function traceNumber(page: Page, num: number): Promise<void> {
   const isMobile = viewport && viewport.width < 600
 
   for (const stroke of def.strokes) {
-    const pts = stroke.points
+    let pts: Point[] = stroke.points as Point[]
+    if (!pts || pts.length === 0) {
+      const rawPts = await page.evaluate<{ x: number; y: number }[], string>((svgPath) => {
+        const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        pathElement.setAttribute('d', svgPath)
+        const length = pathElement.getTotalLength()
+        const points = []
+        const numPoints = Math.max(20, Math.floor(length / 5))
+        for (let i = 0; i <= numPoints; i++) {
+          const point = pathElement.getPointAtLength((i / numPoints) * length)
+          points.push({ x: point.x / 100, y: point.y / 100 })
+        }
+        return points
+      }, stroke.svgPath)
+      pts = rawPts as Point[]
+    }
     if (pts.length === 0) continue
 
     const start = toScreenCoords(box, pts[0])
@@ -143,7 +158,18 @@ export async function traceNumberWithTouch(
   if (!def) throw new Error(`No definition for number ${num}`)
 
   for (const stroke of def.strokes) {
-    const pts = stroke.points
+    const pts = stroke.points || await page.evaluate((svgPath) => {
+      const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      pathElement.setAttribute('d', svgPath)
+      const length = pathElement.getTotalLength()
+      const points = []
+      const numPoints = Math.max(20, Math.floor(length / 5))
+      for (let i = 0; i <= numPoints; i++) {
+        const point = pathElement.getPointAtLength((i / numPoints) * length)
+        points.push({ x: point.x / 100, y: point.y / 100 })
+      }
+      return points
+    }, stroke.svgPath)
     if (pts.length === 0) continue
 
     const start = toScreenCoords(box, pts[0])
