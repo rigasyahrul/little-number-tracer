@@ -1,4 +1,5 @@
 import type { NumberDefinition, Stroke } from '../../types/tracing'
+import type { AgeMode } from '../../stores/ageModeStore'
 import { sampleSvgPathPoints } from '../../utils/svgPathSampler'
 
 function getStrokePoints(stroke: Stroke) {
@@ -15,6 +16,7 @@ interface NumberPathProps {
   highlightStrokeId?: string
   onPathStrokeId?: string
   showDebugPoints?: boolean
+  ageMode?: AgeMode
 }
 
 export function NumberPath({
@@ -24,7 +26,9 @@ export function NumberPath({
   highlightStrokeId,
   onPathStrokeId,
   showDebugPoints = false,
+  ageMode = '5',
 }: NumberPathProps) {
+  const strokeMultiplier = ageMode === '3-4' ? 2 : 1
   const startX = numberDef.startPoint.x * 100
   const startY = numberDef.startPoint.y * 100
 
@@ -47,7 +51,7 @@ export function NumberPath({
         d={numberDef.svgPath}
         fill="none"
         stroke="#CCCCCC"
-        strokeWidth={6}
+        strokeWidth={6 * strokeMultiplier}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -79,7 +83,7 @@ export function NumberPath({
             d={stroke.svgPath}
             fill="none"
             stroke={strokeColor}
-            strokeWidth={strokeWidthVal}
+            strokeWidth={strokeWidthVal * strokeMultiplier}
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray={dashArray}
