@@ -142,6 +142,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
         width={canvasWidth}
         height={canvasHeight}
         clearTrigger={clearTrigger}
+        ageMode={ageMode}
         onStrokeChange={(points) => {
           const normalized = points.map((p) => ({
             x: p.x / canvasWidth,
