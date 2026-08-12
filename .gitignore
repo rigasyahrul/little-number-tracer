@@ -29,6 +29,8 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 *.png
+# Keep Playwright visual baselines (generated on Linux in CI/orbs)
+!tests/e2e/**/*-snapshots/**/*.png
 
 bdd-kit
 cm

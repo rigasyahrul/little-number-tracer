@@ -62,6 +62,8 @@ Helpers: `tests/e2e/helpers/traceNumber.ts`, `tests/e2e/fixtures.ts`.
 
 - First run may need browser install: `npx playwright install` (if missing in environment).
 - Snapshot failures: inspect diff; update only when intentional (`npx playwright test --update-snapshots` with care).
+- Baselines live under `tests/e2e/*-snapshots/` as `*-linux.png` (CI/orbs are Linux). Root `.gitignore` ignores `*.png` but un-ignores those snapshot dirs — commit new baselines when tests write them.
+- “A snapshot doesn't exist … writing actual” means missing baseline, not necessarily a UI bug; re-run after the PNGs are present/committed.
 - DebugPanel is available under Playwright via `window._PLAYWRIGHT_TEST_` (see fixtures / `DebugPanel.tsx`).
 
 ## PWA & versioning
