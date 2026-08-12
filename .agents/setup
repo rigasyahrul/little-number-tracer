@@ -53,4 +53,16 @@ if [[ ! -f "$HOME/.config/amp/plugins/grok-45-mode.ts" ]]; then
   amp plugins add --auto-update @amp/grok-45-mode
 fi
 
+# Ensure obra/superpowers skills are available in this orb (User Skills + local fallback)
+if [[ ! -d "$HOME/.config/agents/skills/brainstorming" ]]; then
+  echo "[setup] Installing obra/superpowers skills..."
+  if [[ -d "$repo_root/.agents/skills/brainstorming" ]]; then
+    mkdir -p "$HOME/.config/agents/skills"
+    cp -a "$repo_root/.agents/skills/." "$HOME/.config/agents/skills/"
+  else
+    amp skill add obra/superpowers/skills --global --overwrite || true
+  fi
+  echo "[setup] Superpowers skills ready"
+fi
+
 echo "[setup] Orb setup complete."
