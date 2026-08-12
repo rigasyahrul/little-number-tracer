@@ -50,7 +50,9 @@ src/
   types/tracing.ts
   utils/svgPathSampler.ts        # Sample SVG → points
   utils/pathDetection.ts         # Distance / coverage helpers
-tests/e2e/                       # Playwright (see ops-playbook)
+  utils/freeDrawStorage.ts       # Free-draw IndexedDB snapshot (ArrayBuffer)
+  utils/downloadImage.ts         # PNG download / Web Share
+  tests/e2e/                       # Playwright (see ops-playbook)
 public/                          # PWA assets, audio, version.json (generated)
 scripts/generate-version.js      # Writes public/version.json on build
 ```
@@ -73,7 +75,9 @@ scripts/generate-version.js      # Writes public/version.json on build
 | `DebugPanel` | Coverage %, threshold slider, show points | `import.meta.env.DEV` or `window._PLAYWRIGHT_TEST_` |
 | `NumberPickerSidebar` | Jump to another digit without gallery | parent callbacks |
 | `useVersionCheck` | Compare build version to `/version.json` | `APP_VERSION` |
-| `FreeDrawScreen` | Blank canvas, colors, eraser, clear, PNG save | canvas 2D |
+| `FreeDrawScreen` | Blank canvas, colors, eraser, clear, PNG save; restores last drawing | canvas 2D, `freeDrawStorage`, `downloadImage` |
+| `freeDrawStorage` | Persist/restore free-draw PNG via IndexedDB (ArrayBuffer; Safari-safe) | `idb` |
+| `downloadImage` | Cross-browser PNG download (Web Share → blob URL anchor) | — |
 
 ## Tracing data flow
 
@@ -118,6 +122,8 @@ NumberGallery reads numbers[digit].completed for styling
 | Tracing layout (portrait/landscape) | `src/components/TracingScreen.tsx` |
 | Gallery UI | `src/components/NumberGallery.tsx` |
 | Free draw tools | `src/components/FreeDrawScreen.tsx` |
+| Free draw persistence | `src/utils/freeDrawStorage.ts` |
+| Free draw / PNG download | `src/utils/downloadImage.ts` |
 | Progress schema / persistence | `src/stores/progressStore.ts` |
 | Types for strokes/numbers | `src/types/tracing.ts` |
 | Sounds | `src/audio/AudioManager.ts`, `public/audio/` |

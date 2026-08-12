@@ -54,6 +54,7 @@ npm run test
 | `touch-tracing.spec.ts` | Touch / iPad-oriented tracing |
 | `point-alignment.spec.ts` | Detection points vs stroke (per digit) + snapshots |
 | `responsive-alignment.spec.ts` | Alignment across viewports + snapshots |
+| `free-draw.spec.ts` | Free-draw persist (Back/reload/clear) + Save Image download |
 
 Helpers: `tests/e2e/helpers/traceNumber.ts`, `tests/e2e/fixtures.ts`.
 
@@ -116,6 +117,9 @@ Issue tracking via `bd` — `bd ready`, `bd show`, `bd update`, `bd close`, `bd 
 | Treating `docs/IMPLEMENTATION-PLAN.md` as current | Historical — use this handbook |
 | E2E against wrong port | Config expects 5173 + dev server |
 | Konva/Dexie in old architecture doc | **Not used** — Canvas + `idb` |
+| Free draw lost on Back/refresh | Should auto-restore from `NumberTracerFreeDrawDB`; see `freeDrawStorage` |
+| Free draw Save blank/navigates on iPad | Must use blob URL or Web Share — never data-URL-only download |
+| Safari IDB put Blob fails | Store PNG as `ArrayBuffer` (`data` field), not `Blob` |
 
 ## Landing the plane
 
