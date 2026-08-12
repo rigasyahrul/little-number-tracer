@@ -1,94 +1,78 @@
 # Architecture
 
-## Tech Stack
+> **Agents:** For navigation, data flow, and “where to change X”, use the live handbook:
+> [`docs/agents/codebase-map.md`](./agents/codebase-map.md), [`domain-rules.md`](./agents/domain-rules.md), [`ops-playbook.md`](./agents/ops-playbook.md).
+> This file is a short stack + ADR summary kept aligned with the shipped app (updated 2026-08-12).
+
+## Tech Stack (current)
 
 | Layer | Choice | Rationale |
 |-------|--------|-----------|
-| Language | TypeScript | Type safety, better DX, catches errors early for maintainable codebase |
-| Framework | React 18+ with Vite | Fast development, excellent ecosystem, user preference, good PWA support |
-| PWA | Vite PWA Plugin + Workbox | Service worker generation, offline caching, easy PWA manifest setup |
-| Canvas/Drawing | HTML5 Canvas API or React Konva | Touch drawing support, good performance for tracing detection |
-| Animations | Lottie (lottie-react) | Rich mascot animations, small file size, designer-friendly workflow |
-| Audio | Howler.js | Reliable cross-browser audio, sprite support for sound effects |
-| Storage | IndexedDB via idb or Dexie.js | Offline-first local storage, stores progress data persistently |
-| Styling | Tailwind CSS | Rapid UI development, easy to create kid-friendly rounded colorful components |
-| State Management | Zustand | Lightweight, simple API, good for app state and progress tracking |
+| Language | TypeScript | Type safety, maintainable codebase |
+| Framework | React 19 + Vite 6 | Fast DX, strong ecosystem, PWA-friendly |
+| PWA | `vite-plugin-pwa` + Workbox | SW generation, offline caching, manifest |
+| Canvas / drawing | HTML5 Canvas + Pointer Events | Touch/stylus tracing, performance |
+| Path geometry | SVG path strings (0–100) + runtime sampling | Single source for render + hit-testing |
+| Animations | Emoji/CSS celebrations + mascot states; `lottie-react` listed in package.json but not imported in `src/` yet | Lightweight feedback |
+| Audio | Howler.js | Cross-browser SFX |
+| Storage | IndexedDB via **`idb`** | Offline-first progress, no backend |
+| Styling | Tailwind CSS | Kid-friendly utility UI |
+| State | Zustand | Lightweight progress + app state |
+| E2E | Playwright | Touch/viewport/alignment coverage |
 
-## Components
+**Not used (despite older drafts):** React Konva, Dexie.js.
 
-### 1. TracingCanvas
-Core canvas component for number tracing with touch detection
+## Runtime components (shipped)
 
-**Dependencies:** Canvas API, Touch events
-
-### 2. NumberPath
-Renders dotted paths and stroke arrows for each number 0-9
-
-**Dependencies:** TracingCanvas
-
-### 3. Mascot
-Animated pencil companion using Lottie animations
-
-**Dependencies:** lottie-react
-
-### 4. NumberGallery
-Grid view for selecting numbers to practice
-
-**Dependencies:** ProgressStore
-
-### 5. CelebrationOverlay
-Confetti and celebration animations on completion
-
-**Dependencies:** Lottie, AudioManager
-
-### 6. FreeDrawCanvas
-Blank canvas with color picker for creative drawing
-
-**Dependencies:** Canvas API
-
-### 7. AudioManager
-Handles sound effects playback
-
-**Dependencies:** Howler.js
-
-### 8. ProgressStore
-Zustand store for tracking completed numbers and scores
-
-**Dependencies:** Zustand, IndexedDB
+| Component / module | Role |
+|--------------------|------|
+| `App` | View state: gallery \| tracing \| freeDraw; hydrate progress; update banner |
+| `NumberGallery` | Digit grid + free-draw entry; completion styling from progress store |
+| `TracingScreen` | Composes canvas, path, arrows, mascot, celebration, sidebar, debug |
+| `TracingCanvas` | Pointer drawing surface |
+| `NumberPath` / `StrokeArrows` | Guide rendering and direction cues |
+| `useTracing` + `svgPathSampler` | Coverage detection and completion |
+| `numberDefinitions` | Digits 0–9 stroke/path data |
+| `progressStore` | Zustand + IndexedDB progress |
+| `Mascot` / `CelebrationOverlay` | Encouragement and rewards |
+| `FreeDrawScreen` | Ungraded creative canvas |
+| `AudioManager` | Howler SFX |
+| `DebugPanel` | Dev/Playwright tracing diagnostics |
+| `NumberPickerSidebar` | Switch digits while tracing |
+| `UpdateBanner` + `useVersionCheck` | Deployed version mismatch UX |
 
 ## Deployment
 
-Static files deployed to **Object Storage** with **CDN** distribution for global availability and fast loading. PWA with offline support via Service Workers.
+Static assets suitable for object storage + CDN (e.g. Cloudflare Pages). PWA offline via service workers. Build emits `public/version.json` via `scripts/generate-version.js`.
 
 ## Architecture Decision Records
 
 ### ADR-001: PWA over Native App
 
-**Decision:** Build as Progressive Web App using React
+**Decision:** Progressive Web App (React + Vite PWA plugin).
 
-**Rationale:** No app store approval needed, instant updates, works on any device with browser, easier maintenance
+**Rationale:** No app-store gate, instant updates, any modern browser/tablet, simpler maintenance.
 
 ### ADR-002: Offline-First Architecture
 
-**Decision:** Use Service Workers and IndexedDB for full offline capability
+**Decision:** Service workers + IndexedDB for offline use and durable local progress.
 
-**Rationale:** Kids may use app without internet, progress must persist locally
+**Rationale:** Children may use the app without reliable internet; progress must survive reloads.
 
 ### ADR-003: Local-Only Storage
 
-**Decision:** Store all data in IndexedDB, no backend required
+**Decision:** All progress in IndexedDB; no backend.
 
-**Rationale:** Simplifies architecture, no server costs, privacy-friendly for children
+**Rationale:** Simple ops, no server cost, privacy-friendly for children.
 
-### ADR-004: Lottie for Mascot Animations
+### ADR-004: Lightweight motion for feedback
 
-**Decision:** Use Lottie format for all mascot and celebration animations
+**Decision:** Ship celebrations/mascot with simple UI motion (emoji/CSS). `lottie-react` may be adopted later for richer motion; it is not required by current components.
 
-**Rationale:** Rich animations with small file size, can be created in After Effects or Rive
+**Rationale:** Engaging feedback with minimal asset pipeline; avoid blocking on animation tooling.
 
-### ADR-005: Canvas-Based Tracing
+### ADR-005: Canvas-Based Tracing + SVG Path Definitions
 
-**Decision:** Use HTML5 Canvas for tracing detection rather than SVG
+**Decision:** Draw with HTML5 Canvas; define glyphs as SVG paths; sample paths for detection.
 
-**Rationale:** Better performance for continuous touch tracking, easier path deviation detection
-
+**Rationale:** Continuous pointer tracking performance; one geometry source for visuals and hit-testing (see agent domain-rules for coordinate spaces).
