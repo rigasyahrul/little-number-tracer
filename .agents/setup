@@ -48,4 +48,9 @@ echo "[setup] Installing Playwright Chromium, WebKit, and system dependencies...
 npx playwright install --with-deps chromium webkit
 echo "[setup] Playwright dependencies ready in $((SECONDS - started_at))s"
 
+if [[ ! -f "$HOME/.config/amp/plugins/grok-45-mode.ts" ]]; then
+  echo "[setup] Installing the auto-updating Grok 4.5 agent mode..."
+  amp plugins add --auto-update @amp/grok-45-mode
+fi
+
 echo "[setup] Orb setup complete."
