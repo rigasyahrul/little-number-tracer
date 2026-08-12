@@ -1,5 +1,13 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback, forwardRef } from 'react'
 import React from 'react'
+import {
+  saveFreeDrawSnapshot,
+  loadFreeDrawSnapshot,
+  clearFreeDrawSnapshot,
+  canvasToPngBlob,
+  drawBlobToCanvas,
+} from '../utils/freeDrawStorage'
+import { downloadPngImage } from '../utils/downloadImage'
 
 interface FreeDrawScreenProps {
   onClose: () => void
@@ -30,9 +38,12 @@ export function FreeDrawScreen({ onClose: _onClose }: FreeDrawScreenProps) {
   const [isEraser, setIsEraser] = useState(false)
   const [lineWidth, setLineWidth] = useState(5)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 400, height: 600 })
+  const hasInkRef = useRef(false)
+  const persistInFlightRef = useRef<Promise<void> | null>(null)
 
   useEffect(() => {
     const updateSize = () => {
@@ -48,12 +59,54 @@ export function FreeDrawScreen({ onClose: _onClose }: FreeDrawScreenProps) {
     return () => window.removeEventListener('resize', updateSize)
   }, [])
 
+  const persistCanvas = useCallback(async () => {
+    const canvas = canvasRef.current
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return
+    const run = async () => {
+      try {
+        const blob = await canvasToPngBlob(canvas)
+        const cssWidth = canvas.clientWidth || canvasSize.width
+        const cssHeight = canvas.clientHeight || canvasSize.height
+        await saveFreeDrawSnapshot({
+          blob,
+          width: cssWidth,
+          height: cssHeight,
+        })
+        hasInkRef.current = true
+      } catch (error) {
+        console.error('Failed to persist free draw:', error)
+      }
+    }
+    // Serialize writes so rapid strokes don't race
+    const next = (persistInFlightRef.current ?? Promise.resolve()).then(run, run)
+    persistInFlightRef.current = next
+    await next
+  }, [canvasSize.width, canvasSize.height])
+
+  const handleStrokeEnd = useCallback(() => {
+    hasInkRef.current = true
+    void persistCanvas()
+  }, [persistCanvas])
+
+  // Soft guard on refresh/close — drawing is already in IndexedDB after each stroke
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasInkRef.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [])
+
   const handleClear = () => {
     setClearTrigger((prev) => prev + 1)
+    hasInkRef.current = false
+    void clearFreeDrawSnapshot()
     setMenuOpen(false)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -67,10 +120,23 @@ export function FreeDrawScreen({ onClose: _onClose }: FreeDrawScreenProps) {
     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height)
     tempCtx.drawImage(canvas, 0, 0)
 
-    const link = document.createElement('a')
-    link.download = `free-draw-${Date.now()}.png`
-    link.href = tempCanvas.toDataURL('image/png')
-    link.click()
+    try {
+      const blob = await canvasToPngBlob(tempCanvas)
+      const filename = `free-draw-${Date.now()}.png`
+      const result = await downloadPngImage(blob, filename)
+      if (result === 'shared') {
+        setSaveStatus('Shared!')
+      } else if (result === 'opened') {
+        setSaveStatus('Long-press the image to save')
+      } else {
+        setSaveStatus('Saved!')
+      }
+      window.setTimeout(() => setSaveStatus(null), 2500)
+    } catch (error) {
+      console.error('Failed to save free draw image:', error)
+      setSaveStatus('Save failed')
+      window.setTimeout(() => setSaveStatus(null), 2500)
+    }
     setMenuOpen(false)
   }
 
@@ -86,12 +152,14 @@ export function FreeDrawScreen({ onClose: _onClose }: FreeDrawScreenProps) {
           clearTrigger={clearTrigger}
           isEraser={isEraser}
           lineWidth={isEraser ? lineWidth * 3 : lineWidth}
+          onStrokeEnd={handleStrokeEnd}
         />
 
         {/* Floating menu button on right */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="absolute right-4 top-4 w-14 h-14 rounded-full bg-primary-blue text-white shadow-lg flex items-center justify-center text-2xl hover:scale-110 transition-transform z-10"
+          aria-label={menuOpen ? 'Close menu' : 'Open drawing menu'}
         >
           {menuOpen ? '✕' : '🎨'}
         </button>
@@ -190,13 +258,23 @@ export function FreeDrawScreen({ onClose: _onClose }: FreeDrawScreenProps) {
                 Clear All
               </button>
               <button
-                onClick={handleSave}
+                onClick={() => void handleSave()}
                 className="w-full px-4 py-3 bg-primary-green text-white rounded-xl font-bold hover:opacity-90 flex items-center justify-center gap-2"
               >
                 <span>💾</span>
                 Save Image
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Save status toast */}
+        {saveStatus && (
+          <div
+            className="absolute left-1/2 -translate-x-1/2 bottom-20 bg-text-dark text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg z-30"
+            role="status"
+          >
+            {saveStatus}
           </div>
         )}
 
@@ -226,9 +304,10 @@ interface FreeDrawCanvasProps {
   clearTrigger?: number
   isEraser?: boolean
   lineWidth?: number
+  onStrokeEnd?: () => void
 }
 
-const FreeDrawCanvas = React.forwardRef<HTMLCanvasElement, FreeDrawCanvasProps>(
+const FreeDrawCanvas = forwardRef<HTMLCanvasElement, FreeDrawCanvasProps>(
   (
     {
       width = 800,
@@ -237,143 +316,204 @@ const FreeDrawCanvas = React.forwardRef<HTMLCanvasElement, FreeDrawCanvasProps>(
       clearTrigger = 0,
       isEraser = false,
       lineWidth = 5,
+      onStrokeEnd,
     },
     ref
   ) => {
     const internalCanvasRef = React.useRef<HTMLCanvasElement>(null)
-    const canvasRef = (ref as React.RefObject<HTMLCanvasElement>) || internalCanvasRef
+    const canvasRef =
+      (ref as React.RefObject<HTMLCanvasElement | null>) || internalCanvasRef
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null)
-    const [isDrawing, setIsDrawing] = React.useState(false)
+    // Ref (not state) so pointermove in the same frame as pointerdown still draws
+    const isDrawingRef = React.useRef(false)
     const isInitializedRef = React.useRef(false)
-    const imageDataRef = React.useRef<ImageData | null>(null)
+    const restoreDoneRef = React.useRef(false)
     const lineWidthRef = React.useRef(lineWidth)
+    const onStrokeEndRef = React.useRef(onStrokeEnd)
+    const dprRef = React.useRef(1)
 
-  // Keep lineWidth ref updated
-  React.useEffect(() => {
-    lineWidthRef.current = lineWidth
-  }, [lineWidth])
+    React.useEffect(() => {
+      onStrokeEndRef.current = onStrokeEnd
+    }, [onStrokeEnd])
 
-  // Initialize canvas (only on size changes)
-  React.useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    // Keep lineWidth ref updated
+    React.useEffect(() => {
+      lineWidthRef.current = lineWidth
+    }, [lineWidth])
 
-    const dpr = window.devicePixelRatio || 1
-    const context = canvas.getContext('2d')
-
-    // Save current drawing before resize
-    if (isInitializedRef.current && context) {
-      imageDataRef.current = context.getImageData(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      )
+    const applyContextDefaults = (context: CanvasRenderingContext2D) => {
+      context.lineCap = 'round'
+      context.lineJoin = 'round'
+      context.lineWidth = lineWidthRef.current
     }
 
-    canvas.width = width * dpr
-    canvas.height = height * dpr
-    canvas.style.width = width + 'px'
-    canvas.style.height = height + 'px'
+    // Initialize canvas (only on size changes) + restore snapshot once
+    React.useEffect(() => {
+      const canvas = canvasRef.current
+      if (!canvas) return
 
-    if (!context) return
+      let cancelled = false
 
-    context.scale(dpr, dpr)
-    context.lineCap = 'round'
-    context.lineJoin = 'round'
-    context.lineWidth = lineWidthRef.current
+      const setup = async () => {
+        const dpr = window.devicePixelRatio || 1
+        dprRef.current = dpr
+        const context = canvas.getContext('2d')
+        if (!context) return
 
-    // Restore drawing after resize (best effort)
-    if (imageDataRef.current) {
-      context.putImageData(imageDataRef.current, 0, 0)
-    }
+        // Preserve current pixels across resize via offscreen copy
+        let previousBitmap: ImageBitmap | null = null
+        if (isInitializedRef.current && canvas.width > 0 && canvas.height > 0) {
+          try {
+            previousBitmap = await createImageBitmap(canvas)
+          } catch {
+            previousBitmap = null
+          }
+        }
 
-    contextRef.current = context
-    isInitializedRef.current = true
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height])
+        if (cancelled) {
+          previousBitmap?.close()
+          return
+        }
 
-  // Handle clear
-  React.useEffect(() => {
-    if (clearTrigger > 0) {
+        canvas.width = width * dpr
+        canvas.height = height * dpr
+        canvas.style.width = width + 'px'
+        canvas.style.height = height + 'px'
+
+        context.setTransform(1, 0, 0, 1, 0, 0)
+        context.scale(dpr, dpr)
+        applyContextDefaults(context)
+
+        if (previousBitmap) {
+          context.drawImage(previousBitmap, 0, 0, width, height)
+          previousBitmap.close()
+        } else if (!restoreDoneRef.current) {
+          // First mount: restore from IndexedDB if present
+          const snapshot = await loadFreeDrawSnapshot()
+          if (cancelled) return
+          if (snapshot?.blob) {
+            // drawBlobToCanvas draws in device pixels; temporarily reset transform
+            await drawBlobToCanvas(canvas, snapshot.blob)
+            if (cancelled) return
+            // Re-apply CSS-pixel scale for drawing
+            context.setTransform(1, 0, 0, 1, 0, 0)
+            context.scale(dpr, dpr)
+            applyContextDefaults(context)
+          }
+          restoreDoneRef.current = true
+        }
+
+        contextRef.current = context
+        isInitializedRef.current = true
+      }
+
+      void setup()
+
+      return () => {
+        cancelled = true
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [width, height])
+
+    // Handle clear
+    React.useEffect(() => {
+      if (clearTrigger > 0) {
+        const context = contextRef.current
+        const canvas = canvasRef.current
+        if (context && canvas) {
+          context.save()
+          context.setTransform(1, 0, 0, 1, 0, 0)
+          context.clearRect(0, 0, canvas.width, canvas.height)
+          context.restore()
+        }
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [clearTrigger])
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+      e.preventDefault()
+      const canvas = canvasRef.current
+      if (canvas) {
+        try {
+          canvas.setPointerCapture(e.pointerId)
+        } catch {
+          /* ignore */
+        }
+      }
+      const { x, y } = getPointerCoordinates(e)
+
       const context = contextRef.current
       if (context) {
-        context.clearRect(0, 0, width, height)
+        context.lineWidth = lineWidth
+        context.strokeStyle = isEraser ? '#FFF' : color
+        context.globalCompositeOperation = isEraser
+          ? 'destination-out'
+          : 'source-over'
+        context.beginPath()
+        context.moveTo(x, y)
+      }
+
+      isDrawingRef.current = true
+    }
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!isDrawingRef.current) return
+      e.preventDefault()
+
+      const { x, y } = getPointerCoordinates(e)
+
+      const context = contextRef.current
+      if (context) {
+        context.lineTo(x, y)
+        context.stroke()
       }
     }
-  }, [clearTrigger, width, height])
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
-    const { x, y } = getPointerCoordinates(e)
+    const endStroke = (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!isDrawingRef.current) return
+      e.preventDefault()
 
-    const context = contextRef.current
-    if (context) {
-      context.lineWidth = lineWidth
-      context.strokeStyle = isEraser ? '#FFF' : color
-      context.globalCompositeOperation = isEraser
-        ? 'destination-out'
-        : 'source-over'
-      context.beginPath()
-      context.moveTo(x, y)
+      isDrawingRef.current = false
+
+      const context = contextRef.current
+      if (context) {
+        context.globalCompositeOperation = 'source-over'
+        context.closePath()
+      }
+
+      onStrokeEndRef.current?.()
     }
 
-    setIsDrawing(true)
-  }
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
-    e.preventDefault()
-
-    const { x, y } = getPointerCoordinates(e)
-
-    const context = contextRef.current
-    if (context) {
-      context.lineTo(x, y)
-      context.stroke()
+    const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+      endStroke(e)
     }
-  }
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
-    e.preventDefault()
-
-    setIsDrawing(false)
-
-    const context = contextRef.current
-    if (context) {
-      context.globalCompositeOperation = 'source-over'
-      context.closePath()
+    const handlePointerCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
+      endStroke(e)
     }
-  }
 
-  const handlePointerCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
-    e.preventDefault()
+    const getPointerCoordinates = (
+      e: React.PointerEvent<HTMLCanvasElement>
+    ): { x: number; y: number } => {
+      const canvas = canvasRef.current
+      if (!canvas) return { x: 0, y: 0 }
 
-    setIsDrawing(false)
-  }
-
-  const getPointerCoordinates = (
-    e: React.PointerEvent<HTMLCanvasElement>
-  ): { x: number; y: number } => {
-    const canvas = canvasRef.current
-    if (!canvas) return { x: 0, y: 0 }
-
-    const rect = canvas.getBoundingClientRect()
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      const rect = canvas.getBoundingClientRect()
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
     }
-  }
 
     return (
       <canvas
         ref={canvasRef}
+        data-testid="free-draw-canvas"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
+        onPointerLeave={handlePointerUp}
         style={{
           border: 'none',
           cursor: isEraser
@@ -386,3 +526,5 @@ const FreeDrawCanvas = React.forwardRef<HTMLCanvasElement, FreeDrawCanvasProps>(
     )
   }
 )
+
+FreeDrawCanvas.displayName = 'FreeDrawCanvas'

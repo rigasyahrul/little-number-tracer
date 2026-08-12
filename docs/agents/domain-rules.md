@@ -77,7 +77,7 @@ Rules:
 - **TracingScreen:** supports portrait and landscape layout; landscape scales canvas to available space (aspect 400×500 base).
 - **Mascot states:** `idle` \| `guiding` \| `happy` \| `sad` \| `celebrate` — transient states auto-revert in the component.
 - **DebugPanel:** render only when `import.meta.env.DEV` **or** `window._PLAYWRIGHT_TEST_` — never ship debug UI to normal production users.
-- **Free draw:** creative mode; colors/eraser/clear/save PNG — not graded, not written to progress store.
+- **Free draw:** creative mode; colors/eraser/clear/save PNG — not graded, not written to the progress store. Canvas ink is auto-persisted to a separate IndexedDB (`NumberTracerFreeDrawDB`) after each stroke and restored on re-open (Back / refresh). Clear All wipes that snapshot. Save Image uses blob URL + Web Share (not data-URL-only) for iPad Safari.
 - **Update banner:** shown when server `/version.json` version ≠ embedded `APP_VERSION` (skipped for `dev*` versions).
 
 ## Audio
