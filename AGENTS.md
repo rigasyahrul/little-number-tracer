@@ -1,5 +1,15 @@
 # Agent Instructions
 
+## Superpowers
+
+This project uses [obra/superpowers](https://github.com/obra/superpowers) skills (also in your Amp User Skills).
+
+**Before creative work** (features, design, behavior changes): load the `brainstorming` skill and follow it — do not implement until a design is approved.
+
+Core workflow skills: `using-superpowers` → `brainstorming` → `writing-plans` → `subagent-driven-development` / `executing-plans` → `verification-before-completion` → `finishing-a-development-branch`.
+
+Also available: `test-driven-development`, `systematic-debugging`, `requesting-code-review`, `using-git-worktrees`.
+
 ## Quick Start (cm prime summary)
 
 Use cm to searching code more faster, `./cm`
