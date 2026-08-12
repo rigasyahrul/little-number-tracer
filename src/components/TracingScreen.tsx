@@ -9,6 +9,7 @@ import { DebugPanel } from './DebugPanel'
 import { getNumberDefinition } from '../data/numberDefinitions'
 import { useTracing, DEFAULT_COMPLETION_THRESHOLD } from '../hooks/useTracing'
 import { useProgressStore } from '../stores/progressStore'
+import { useAgeModeStore } from '../stores/ageModeStore'
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 500
@@ -34,6 +35,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
 
   const numberDef = getNumberDefinition(number)
   const { incrementAttempt, setCompleted } = useProgressStore()
+  const { ageMode, setAgeMode } = useAgeModeStore()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -125,7 +127,11 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
         height={canvasHeight}
         highlightStrokeId={currentStroke?.id}
         showDebugPoints={showDebugPoints}
+        ageMode={ageMode}
       />
+      <span className="absolute bottom-1.5 right-1.5 bg-white bg-opacity-80 text-xs text-gray-600 px-2 py-0.5 rounded-full pointer-events-none z-10">
+        {ageMode === '3-4' ? '3-4 yrs' : '5 yrs'}
+      </span>
       <StrokeArrows
         stroke={currentStroke}
         width={canvasWidth}
@@ -136,6 +142,7 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
         width={canvasWidth}
         height={canvasHeight}
         clearTrigger={clearTrigger}
+        ageMode={ageMode}
         onStrokeChange={(points) => {
           const normalized = points.map((p) => ({
             x: p.x / canvasWidth,
@@ -179,6 +186,31 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
     </button>
   )
 
+  const renderAgeModeToggle = () => (
+    <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+      <button
+        onClick={() => setAgeMode('3-4')}
+        className={`px-3 py-1.5 text-sm font-semibold transition-colors ${
+          ageMode === '3-4'
+            ? 'bg-primary-green text-text-light'
+            : 'text-text-dark hover:bg-gray-50'
+        }`}
+      >
+        3-4 yrs
+      </button>
+      <button
+        onClick={() => setAgeMode('5')}
+        className={`px-3 py-1.5 text-sm font-semibold transition-colors ${
+          ageMode === '5'
+            ? 'bg-primary-green text-text-light'
+            : 'text-text-dark hover:bg-gray-50'
+        }`}
+      >
+        5 yrs
+      </button>
+    </div>
+  )
+
   const renderStrokeInfo = () =>
     currentStroke && (
       <div className={`${isLandscape ? 'text-base' : 'text-lg'} font-semibold text-text-dark`}>
@@ -216,6 +248,10 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
           </div>
         )}
 
+        <div className="absolute top-4 left-4">
+          {renderAgeModeToggle()}
+        </div>
+
         <div className="absolute bottom-4 left-4">
           {renderClearButtonLandscape()}
         </div>
@@ -242,6 +278,8 @@ export function TracingScreen({ number, onComplete, onSelectNumber }: TracingScr
       <h2 className="text-4xl font-bold text-text-dark">
         Trace the Number {number}
       </h2>
+
+      {renderAgeModeToggle()}
 
       <Mascot state={mascotState} />
 

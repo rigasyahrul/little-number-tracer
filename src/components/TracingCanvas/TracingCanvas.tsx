@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import type { AgeMode } from '../../stores/ageModeStore'
 
 interface Point {
   x: number
@@ -12,6 +13,7 @@ interface TracingCanvasProps {
   onStrokeChange?: (points: Point[]) => void
   onStrokeEnd?: (points: Point[]) => void
   clearTrigger?: number
+  ageMode?: AgeMode
 }
 
 export function TracingCanvas({
@@ -20,6 +22,7 @@ export function TracingCanvas({
   onStrokeChange,
   onStrokeEnd,
   clearTrigger = 0,
+  ageMode = '5',
 }: TracingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
@@ -88,11 +91,12 @@ export function TracingCanvas({
 
       const context = contextRef.current
       if (context) {
+        context.lineWidth = ageMode === '3-4' ? 30 : 15
         context.beginPath()
         context.moveTo(x, y)
       }
     },
-    [getPointerCoordinates]
+    [getPointerCoordinates, ageMode]
   )
 
   const handlePointerMove = useCallback(
