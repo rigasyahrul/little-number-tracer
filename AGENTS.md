@@ -10,6 +10,26 @@ Core workflow skills: `using-superpowers` → `brainstorming` → `writing-plans
 
 Also available: `test-driven-development`, `systematic-debugging`, `requesting-code-review`, `using-git-worktrees`.
 
+## Agent handbook & memory
+
+Deep product/code context for agents lives under **`docs/agents/`** (keep this file short).
+
+| Need | Open |
+|------|------|
+| Handbook index / read order | [`docs/agents/README.md`](docs/agents/README.md) |
+| Code map & where-to-change-X | [`docs/agents/codebase-map.md`](docs/agents/codebase-map.md) |
+| Invariants (tracing, progress, UX) | [`docs/agents/domain-rules.md`](docs/agents/domain-rules.md) |
+| Run / test / debug / pitfalls | [`docs/agents/ops-playbook.md`](docs/agents/ops-playbook.md) |
+| Live vs historical docs | [`docs/agents/doc-index.md`](docs/agents/doc-index.md) |
+| Cross-session learnings | [`docs/agents/memory/INDEX.md`](docs/agents/memory/INDEX.md) |
+
+**Memory (mandatory habits):**
+
+1. **Read** — Before non-trivial work, skim `docs/agents/memory/INDEX.md` and open relevant entries.
+2. **Write** — If you learn something non-obvious that is not already in the live handbook, add a memory file + INDEX line **before landing the plane** (see `docs/agents/memory/README.md`).
+3. **Promote** — Stable rules belong in handbook pages; mark the memory `promoted`.
+4. **Truth** — When docs and `src/` disagree, fix the docs (or write a memory). Do not treat `docs/PLAN*`, `IMPLEMENTATION-PLAN.md`, or unchecked REQs as live source of truth.
+
 ## Quick Start (cm prime summary)
 
 Use cm to searching code more faster, `./cm`
