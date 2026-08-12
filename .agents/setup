@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+node_version="20.20.2"
+node_root="$HOME/.local/node-v$node_version"
+if [[ ! -x "$node_root/bin/node" ]]; then
+  case "$(uname -m)" in
+    x86_64) node_arch="x64" ;;
+    aarch64) node_arch="arm64" ;;
+    *) echo "[setup] Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+  esac
+
+  started_at=$SECONDS
+  echo "[setup] Installing Node.js v$node_version..."
+  archive="node-v$node_version-linux-$node_arch.tar.xz"
+  download_dir="$(mktemp -d)"
+  trap 'rm -rf "$download_dir"' EXIT
+  curl -fsSLo "$download_dir/$archive" "https://nodejs.org/dist/v$node_version/$archive"
+  curl -fsSLo "$download_dir/SHASUMS256.txt" "https://nodejs.org/dist/v$node_version/SHASUMS256.txt"
+  (cd "$download_dir" && grep " $archive\$" SHASUMS256.txt | sha256sum --check -)
+  mkdir -p "$node_root"
+  tar -xJf "$download_dir/$archive" --strip-components=1 -C "$node_root"
+  rm -rf "$download_dir"
+  trap - EXIT
+  echo "[setup] Node.js ready in $((SECONDS - started_at))s"
+fi
+
+profile_marker="# little-number-tracer Node.js"
+if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+  cat >> "$HOME/.bash_profile" <<EOF
+
+$profile_marker
+export PATH="$node_root/bin:\$PATH"
+EOF
+fi
+export PATH="$node_root/bin:$PATH"
+
+started_at=$SECONDS
+echo "[setup] Installing locked npm dependencies..."
+npm ci
+echo "[setup] npm dependencies ready in $((SECONDS - started_at))s"
+
+started_at=$SECONDS
+echo "[setup] Installing Playwright Chromium, WebKit, and system dependencies..."
+npx playwright install --with-deps chromium webkit
+echo "[setup] Playwright dependencies ready in $((SECONDS - started_at))s"
+
+echo "[setup] Orb setup complete."

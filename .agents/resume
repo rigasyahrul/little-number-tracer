@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This project has no persistent services or tunnels to repair after an orb wakes.
+echo "[resume] No services require resuming."
